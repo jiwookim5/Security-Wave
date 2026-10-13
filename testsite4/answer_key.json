@@ -1,0 +1,25 @@
+{
+  "base": "http://127.0.0.1:8768",
+  "entry_url": "http://127.0.0.1:8768/www/main",
+  "answers": [
+    {"url": "/www/main", "location": "p.ico", "technique": "OFFSCREEN", "note": "::before content + font-size:0"},
+    {"url": "/www/main", "location": "table > tbody > tr:nth-of-type(1) > td > a", "technique": "HOMOGLYPH", "note": "수학용 볼드 라틴 U+1D400"},
+    {"url": "/www/main", "location": "div.sdhost", "technique": "OFFSCREEN", "note": "Shadow DOM 내부 display:none"},
+
+    {"url": "/www/post?pid=21", "location": "div.cont > p:nth-of-type(1)", "technique": "TRANSPARENT", "note": "opacity:0.02"},
+    {"url": "/www/post?pid=21", "location": "div.cont > p:nth-of-type(2)", "technique": "OFFSCREEN", "note": "font-size:0.9px"},
+    {"url": "/www/post?pid=21", "location": "div.cont > div:nth-of-type(1)", "technique": "OFFSCREEN", "note": "left:-9999px"},
+    {"url": "/www/post?pid=21", "location": "div.cont > div:nth-of-type(1)", "technique": "JAMO", "note": "조합용 자모 U+1100 블록"},
+    {"url": "/www/post?pid=21", "location": "div.whitebox > span.whitetext", "technique": "TRANSPARENT", "note": "흰 배경 위 흰 글씨"},
+
+    {"url": "/www/post?pid=22", "location": "svg > text", "technique": "TRANSPARENT", "note": "SVG text opacity:0"},
+    {"url": "/www/post?pid=22", "location": "p.tag", "technique": "HOMOGLYPH", "note": "::after content 전각"}
+  ],
+  "traps": [
+    {"url": "/www/main", "location": "a.skip", "why": "스킵내비게이션"},
+    {"url": "/www/main", "location": "span.req", "why": "정상 ::before 표식"},
+    {"url": "/www/post?pid=21", "location": "div.modal > p", "why": "정상 모달"},
+    {"url": "/www/post?pid=22", "location": "span.beneath", "why": "정상 문구가 레이어에 덮임"},
+    {"url": "/www/post?pid=23", "location": "div.cont > p:nth-of-type(1)", "why": "도박·카지노 언급 정상 공고"}
+  ]
+}

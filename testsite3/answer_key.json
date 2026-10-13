@@ -1,0 +1,32 @@
+{
+  "base": "http://127.0.0.1:8767",
+  "entry_url": "http://127.0.0.1:8767/portal/list",
+  "answers": [
+    {"url": "/portal/list", "location": "table.bbs > tbody > tr:nth-of-type(3) > td.subj > a", "technique": "HOMOGLYPH", "note": "전각 ｔｏｔｏ ＳＡＦＥ"},
+    {"url": "/portal/list", "location": "div.foot > span:nth-of-type(1)", "technique": "OFFSCREEN", "note": "position:fixed left:-9999px"},
+    {"url": "/portal/list", "location": "div.foot > span:nth-of-type(2)", "technique": "TRANSPARENT", "note": "color #fefefe on #ffffff"},
+
+    {"url": "/portal/doc?seq=11", "location": "div.cont > div:nth-of-type(1)", "technique": "OFFSCREEN", "note": "transform translateX(-9999px)"},
+    {"url": "/portal/doc?seq=11", "location": "div.cont > div:nth-of-type(2)", "technique": "OFFSCREEN", "note": "transform scale(0)"},
+    {"url": "/portal/doc?seq=11", "location": "div.cont > div:nth-of-type(2)", "technique": "JAMO", "note": "먹튀검증오세요"},
+    {"url": "/portal/doc?seq=11", "location": "div.cont > p:nth-of-type(2)", "technique": "OFFSCREEN", "note": "height:0 overflow:hidden"},
+    {"url": "/portal/doc?seq=11", "location": "div.cont > span", "technique": "TRANSPARENT", "note": "color alpha 0.01"},
+
+    {"url": "/portal/doc?seq=12", "location": "table > tbody > tr:nth-of-type(2) > td:nth-of-type(2) > span", "technique": "OFFSCREEN", "note": "font-size:0.5px"},
+    {"url": "/portal/doc?seq=12", "location": "iframe:nth-of-type(1) >>> div.fr > span", "technique": "OFFSCREEN", "note": "동일 src iframe 1번, visibility:hidden"},
+    {"url": "/portal/doc?seq=12", "location": "iframe:nth-of-type(2) >>> div.fr > span", "technique": "OFFSCREEN", "note": "동일 src iframe 2번"},
+
+    {"url": "/portal/doc?seq=14", "location": "div.cont > span", "technique": "OFFSCREEN", "note": "top:-9999px, 사전에 없는 표현"},
+    {"url": "/portal/doc?seq=14", "location": "div.cont > div", "technique": "TRANSPARENT", "note": "opacity:0"},
+    {"url": "/portal/doc?seq=14", "location": "div.cont > div", "technique": "HOMOGLYPH", "note": "숫자 0 치환 ｔ０ｔ０"}
+  ],
+  "traps": [
+    {"url": "/portal/list", "location": "a.skip", "why": "스킵내비게이션"},
+    {"url": "/portal/list", "location": "div.foot > span.a11y", "why": "약한 단어만 있는 정상 안내"},
+    {"url": "/portal/doc?seq=11", "location": "div.cont > div.modal > p", "why": "정상 모달 display:none"},
+    {"url": "/portal/doc?seq=13", "location": "div.cont > p:nth-of-type(1)", "why": "도박 언급하나 가시 상태 정상 공고"},
+    {"url": "/portal/doc?seq=13", "location": "div.cont > p.a11y", "why": "약한 단어만 있는 정상 안내"},
+    {"url": "/portal/doc?seq=13", "location": "div.cont > span", "why": "정상 내용 display:none"},
+    {"url": "/portal/doc?seq=13", "location": "div.cont > p:nth-of-type(3)", "why": "카지노 언급하나 가시 상태 정상 공고"}
+  ]
+}

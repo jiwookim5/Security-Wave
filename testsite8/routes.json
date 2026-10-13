@@ -1,0 +1,18 @@
+{
+  "/egov/main.do|": "pages/main.html",
+  "/intro.do|": "pages/intro.html",
+  "/bbs/list.do|": "pages/list_1.html",
+  "/bbs/list.do|1": "pages/list_1.html",
+  "/bbs/list.do|2": "pages/list_2.html",
+  "/bbs/comments.do|1001": "pages/comments_1001.html",
+  "/bbs/delete.do|": {
+    "page": "pages/intro.html"
+  },
+  "/bbs/view.do|1001": "pages/view_1001.html",
+  "/bbs/view.do|1002": "pages/view_1002.html",
+  "/bbs/view.do|1003": "pages/view_1003.html",
+  "/bbs/view.do|1004": "pages/view_1004.html",
+  "/bbs/view.do|1005": "pages/view_1005.html",
+  "/bbs/view.do|1006": "pages/view_1006.html",
+  "/bbs/view.do|1007": "pages/view_1007.html"
+}

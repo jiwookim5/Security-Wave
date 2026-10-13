@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>훤히 — 공공 누리집 숨은 불법광고 탐지 도구</title>
+<style>
+/* 화면 글꼴: Pretendard(SIL OFL 1.1, assets/fonts 동봉). 없으면 맑은 고딕. */
+@font-face{font-family:"Pretendard";src:url("/fonts/PretendardVariable.woff2") format("woff2");
+  font-weight:45 920;font-style:normal;font-display:swap}
+:root{
+  --bg:#ffffff; --soft:#f6f6f7; --soft-2:#eeeef0; --line:#e3e3e6; --line-2:#cfcfd4;
+  --text:#141414; --muted:#55565c; --faint:#80818a;
+  --red:#d7141e; --red-dark:#b00f17; --red-weak:#fdeced;
+  --black:#141414;
+  --mono:Consolas,"Cascadia Mono","D2Coding",monospace;
+  --radius:10px;
+}
+:root.dark-mode{
+  --bg:#1a1a1a; --soft:#252525; --soft-2:#303030; --line:#3a3a3a; --line-2:#454545;
+  --text:#e8e8e8; --muted:#a0a0a0; --faint:#707070;
+  --red:#ff5555; --red-dark:#ff3333; --red-weak:#3d1515;
+  --black:#ffffff;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-size:15px;line-height:1.6;
+  font-family:"Pretendard","Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  word-break:keep-all;overflow-wrap:anywhere;letter-spacing:-.011em}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--black);outline-offset:2px}
+
+/* ── 앱 뼈대 ──
+   화면은 세 단계로 바뀐다: 시작(주소 입력) → 탐지 중(진행 상황) → 결과(목록·탭·조치 관리).
+   단계마다 그때 쓰는 것만 보여 처음 쓰는 사람이 무엇을 할지 헷갈리지 않게 한다. */
+[hidden]{display:none !important}
+.app{display:grid;grid-template-rows:auto 1fr 34px;height:100%}
+.topbar{display:flex;align-items:center;gap:18px;padding:10px 22px;background:var(--bg);border-bottom:1px solid var(--line);min-width:0}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;
+  white-space:nowrap;letter-spacing:-.02em;height:38px}
+.brand .dot{width:30px;height:30px;border-radius:8px;background:var(--red);
+  display:grid;place-items:center;font-size:16px;font-weight:700;color:#fff}
+.brand small{font-weight:400;color:var(--muted);font-size:13px;letter-spacing:0}
+.topinfo{flex:1;min-width:0;display:flex;align-items:center;gap:10px;font-size:14px}
+.topinfo .lbl{color:var(--muted);white-space:nowrap}
+#topurl{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#again{flex:none}
+.topact{margin-left:auto;display:flex;gap:8px;flex:none}
+
+/* 시작 화면 */
+.start{overflow:auto;background:var(--soft);display:flex;justify-content:center;align-items:flex-start;padding:9vh 22px 40px}
+.start-in{width:100%;max-width:760px}
+.start h1{font-size:28px;font-weight:700;margin:0 0 6px;letter-spacing:-.025em;line-height:1.35}
+.start .lead{color:var(--muted);margin:0 0 22px;font-size:16px}
+.startform{display:flex;gap:10px}
+.startform input{flex:1;min-width:0;height:54px;background:var(--bg);font-size:17px;
+  border:1.5px solid var(--line-2);border-radius:var(--radius);padding:0 18px}
+.startform input:focus{border-color:var(--black);outline:none}
+.startform input::placeholder{color:var(--faint)}
+.startform .btn.primary{height:54px;padding:0 30px;font-size:17px;flex:none}
+.start .err{margin:14px 0 0}
+.startlinks{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.settings{margin-top:16px;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius)}
+.settings summary{color:var(--text);margin:0;padding:13px 16px;font-size:15px;font-weight:600}
+.settings summary small{font-weight:400;color:var(--faint);font-size:13px;margin-left:8px}
+.setlist{padding:0 16px 6px}
+.setrow{display:grid;grid-template-columns:190px 1fr;gap:4px 16px;padding:12px 0;border-top:1px solid var(--line);align-items:start}
+.setrow>label,.setrow>.name{font-weight:600;font-size:14px;display:flex;gap:8px;align-items:center;cursor:pointer;white-space:nowrap}
+.setrow p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.55}
+.setrow input[type=checkbox]{margin:0;width:17px;height:17px;accent-color:var(--red)}
+.setrow input[type=number]{width:84px;height:34px;background:var(--bg);border:1.5px solid var(--line-2);
+  border-radius:8px;padding:0 10px;color:var(--text);font-weight:400}
+.setrow input[type=number]:focus{border-color:var(--black);outline:none}
+
+/* 탐지 중 화면 */
+.running{display:grid;place-items:center;background:var(--soft);padding:22px;overflow:auto}
+.run-in{width:100%;max-width:560px;text-align:center}
+.run-in .big{font-size:22px;font-weight:700}
+.runurl{color:var(--muted);word-break:break-all;margin:4px 0 20px;font-size:14px}
+.run-in .bar{height:4px;border-radius:99px}
+#runmsg{margin:14px 0 0;color:var(--muted)}
+#runcur{margin:4px 0 0;color:var(--faint);font-size:13px;word-break:break-all}
+.runnote{margin:18px 0 0;color:var(--faint);font-size:13px}
+
+/* 탐지 키워드 창 */
+.kw-in{padding:24px 28px 26px;max-height:86vh;overflow:auto}
+.kw-in h2{font-size:21px;font-weight:700;margin:0 0 4px}
+.kw-in .lead{color:var(--muted);margin:0 0 16px;font-size:14px}
+.kwbox{background:var(--soft);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;margin-bottom:12px}
+.kwbox h3{font-size:14px;font-weight:600;margin:0 0 8px}
+.kwrow{display:flex;gap:8px;flex-wrap:wrap}
+.kwrow input,.kwrow select{height:38px;background:var(--bg);border:1.5px solid var(--line-2);border-radius:8px;padding:0 12px;font-size:14px}
+.kwrow input{flex:1;min-width:180px}
+.kwrow input:focus,.kwrow select:focus{border-color:var(--black);outline:none}
+.kwmsg{margin:8px 0 0;font-size:14px;color:var(--muted)}
+.kwmsg.bad{color:var(--red-dark)}
+.kwmsg b.ad{color:var(--red)}
+.kwcat{border:1px solid var(--line);border-radius:var(--radius);margin-bottom:8px;background:var(--bg)}
+.kwcat summary{color:var(--text);margin:0;padding:11px 14px;font-size:15px;font-weight:600}
+.kwcat summary small{font-weight:400;color:var(--faint);font-size:13px;margin-left:6px}
+.kwcat .desc{margin:0 14px 8px;color:var(--muted);font-size:13px}
+.kwlist{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 14px}
+.kw{display:inline-flex;align-items:center;gap:4px;border:1.5px solid var(--line-2);border-radius:99px;padding:3px 11px;
+  font-size:13px;background:var(--bg);cursor:pointer}
+.kw:hover{border-color:var(--black)}
+.kw.off{text-decoration:line-through;color:var(--faint);background:var(--soft);border-style:dashed}
+.kw.user{border-color:var(--red);color:var(--red-dark)}
+.kw.user i{font-style:normal;font-weight:700}
+.kwfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:14px;font-size:13px;color:var(--muted)}
+
+/* 도움말 창 */
+dialog.help{width:calc(100% - 32px);max-width:760px;border:none;border-radius:14px;padding:0;
+  box-shadow:0 20px 60px rgba(0,0,0,.25);color:var(--text);z-index:2000}
+dialog.help::backdrop{background:rgba(0,0,0,.35)}
+.help-in{padding:24px 28px 26px;max-height:82vh;overflow:auto}
+.help-close{position:sticky;top:0;float:right;margin:-6px -8px 0 0}
+.btn{border:1.5px solid var(--line-2);background:var(--bg);border-radius:var(--radius);padding:8px 15px;
+  font-weight:500;font-size:14px}
+.btn:hover{border-color:var(--black)}
+.btn.primary{background:var(--red);border-color:var(--red);color:#fff;height:46px;padding:0 26px;font-size:16px;font-weight:600}
+.btn.primary:hover{background:var(--red-dark);border-color:var(--red-dark)}
+.btn.primary:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent}
+.btn.sm{padding:6px 12px;font-size:13px;font-weight:500;border-radius:8px}
+
+.body{display:grid;grid-template-columns:240px 1fr;min-height:0}
+.side{background:var(--bg);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;min-height:0;overflow:auto}
+.side h3{margin:16px 20px 6px;font-size:12px;letter-spacing:.02em;color:var(--muted);font-weight:600}
+.nav{display:flex;flex-direction:column;gap:3px;padding:2px 10px}
+.nav button{display:flex;justify-content:space-between;align-items:center;gap:8px;
+  background:none;border:none;border-radius:9px;padding:9px 13px;font-size:15px;
+  font-weight:500;text-align:left;color:var(--text)}
+.nav button:hover{background:var(--soft)}
+.nav button[aria-selected="true"]{background:var(--black);color:#fff;font-weight:600}
+.nav .cnt{font-size:13px;font-variant-numeric:tabular-nums;color:var(--muted);font-weight:500}
+.nav button[aria-selected="true"] .cnt{color:#fff}
+.stats{padding:0 20px 12px}
+.stat{display:flex;justify-content:space-between;align-items:baseline;padding:7px 0;font-size:14px;
+  color:var(--muted);border-bottom:1px solid var(--line)}
+.stat b{color:var(--text);font-size:17px;font-weight:600;font-variant-numeric:tabular-nums}
+.stat.hot b{color:var(--red)}
+.side .foot{margin-top:auto;padding:10px 14px 12px}
+.side .foot button{width:100%;margin-top:6px;padding:7px 12px}
+
+.main{min-width:0;min-height:0;display:flex;flex-direction:column;background:var(--soft)}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 22px;
+  background:var(--bg);border-bottom:1px solid var(--line)}
+.toolbar input[type=search]{flex:1;min-width:180px;height:38px;background:var(--bg);border:1.5px solid var(--line-2);
+  border-radius:9px;padding:0 13px;font-size:14px}
+.toolbar input[type=search]:focus{border-color:var(--black);outline:none}
+.toolbar select{height:38px;background:var(--bg);border:1.5px solid var(--line-2);border-radius:9px;padding:0 10px;font-size:14px}
+.chips{display:flex;gap:7px;flex-wrap:wrap}
+.chip{display:flex;align-items:center;gap:6px;border:1.5px solid var(--line);border-radius:99px;padding:5px 14px;font-size:14px;font-weight:500;
+  background:var(--soft);color:var(--faint);user-select:none}
+.chip:hover{border-color:var(--line-2);color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--bg);border-color:var(--black);color:var(--text);font-weight:500}
+.view{flex:1;min-height:0;overflow:auto;padding:18px 22px 32px}
+.status{display:flex;align-items:center;gap:16px;padding:0 22px;background:var(--bg);
+  color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
+.status .sp{margin-left:auto;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── 내용 ── */
+.badge{display:inline-block;border-radius:6px;padding:2px 10px;font-size:13px;font-weight:600;
+  white-space:nowrap;border:1.5px solid transparent;line-height:1.5}
+.b-HOMOGLYPH{background:var(--black);color:#fff}
+.b-JAMO{background:var(--bg);color:var(--black);border-color:var(--black)}
+.b-TRANSPARENT{background:var(--red);color:#fff}
+.b-OFFSCREEN{background:var(--bg);color:var(--red);border-color:var(--red)}
+.b-ETC{background:var(--soft-2);color:var(--text);border-color:var(--line-2)}
+.grade{display:inline-block;border-radius:6px;padding:2px 9px;font-size:13px;font-weight:600;line-height:1.5;
+  white-space:nowrap;border:1.5px solid var(--red);color:var(--red);background:var(--bg)}
+.grade.g-취약{background:var(--red);color:#fff}
+.grade.g-새로{background:var(--bg);color:var(--red);border-color:var(--red)}
+.notice{border:1px solid var(--red);color:var(--text);border-radius:8px;padding:10px 14px;margin:0 0 12px;font-size:14px}
+.notice summary{cursor:pointer;color:var(--muted)}
+.notice ul{margin:8px 0 0;padding-left:18px;font-size:13px}
+.grade.g-피해확인{background:var(--black);color:#fff;border-color:var(--black)}
+/* 조치 확인 결과: 사라졌으면 조용히, 아직 있으면 눈에 띄게 */
+.grade.c-gone,.grade.c-deleted{background:var(--bg);color:var(--muted);border-color:var(--line-2)}
+.grade.c-present{background:var(--red);color:#fff;border-color:var(--red)}
+#idxbtn{font-size:13px;white-space:nowrap;max-width:320px;overflow:hidden;text-overflow:ellipsis;padding:5px 12px}
+#idxbtn.on{border-color:var(--red);color:var(--red)}
+.grouphead{display:flex;justify-content:space-between;gap:12px;align-items:center;
+  padding:11px 16px;background:var(--bg);border:1px solid var(--line);border-left:4px solid var(--red);
+  border-radius:var(--radius) var(--radius) 0 0;font-weight:600;font-size:15px;word-break:break-all}
+.grouphead span:last-child{flex:none;font-size:13px;color:var(--muted);font-weight:600}
+.item{border:1px solid var(--line);border-top:none;padding:16px 18px;background:var(--bg)}
+.group{margin-bottom:18px}
+.group .item:last-child{border-radius:0 0 var(--radius) var(--radius)}
+.item.done{opacity:.5}
+.item.fp{opacity:.4}
+.head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.reason{color:var(--muted);font-size:14px}
+.ev{background:var(--soft);border:1px solid var(--line);border-left:4px solid var(--red);
+  border-radius:6px 8px 8px 6px;padding:10px 14px;word-break:break-all;font-size:16px;font-weight:400;
+  line-height:1.65;color:var(--text)}
+dl.kv{display:grid;grid-template-columns:92px 1fr;gap:7px 12px;margin:12px 0 0;font-size:14px;align-items:center}
+dl.kv dt{color:var(--muted);font-weight:500}
+/* CSS 선택자만 고정폭으로 (복사 버튼이 있는 줄) */
+dl.kv dd:has(.copy) code{font-family:var(--mono);font-size:13px}
+dl.kv dd{margin:0;word-break:break-all;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+code{font-family:inherit;font-size:14px;background:var(--soft);
+  border:1px solid var(--line);border-radius:5px;padding:1px 7px}
+.manage{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:14px;padding-top:14px;
+  border-top:1px solid var(--line)}
+.manage select{height:38px;background:var(--bg);border:1.5px solid var(--line-2);border-radius:8px;padding:0 10px;font-size:14px}
+.manage input{flex:1;min-width:200px;height:38px;background:var(--bg);border:1.5px solid var(--line-2);
+  border-radius:8px;padding:0 12px;font-size:14px}
+.manage input:focus,.manage select:focus{border-color:var(--black);outline:none}
+details summary{cursor:pointer;color:var(--red);font-size:14px;font-weight:600;margin-top:12px}
+.guide{margin-top:8px;background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:12px 16px;font-size:14px}
+.guide ol{margin:0;padding-left:20px}
+.guide li+li{margin-top:4px}
+.card{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px}
+.card.target{outline:2px solid var(--red);outline-offset:1px}
+.shot{margin-top:10px;border:1px solid var(--line);border-radius:8px;background:#fff;padding:6px;
+  overflow:auto;max-height:300px}
+.shot img{display:block;max-width:100%}
+pre.src{margin:10px 0 0;background:var(--soft);border:1px solid var(--line);border-radius:8px;
+  padding:12px 14px;overflow:auto;max-height:340px;white-space:pre-wrap;word-break:break-all;
+  font-family:var(--mono);font-size:13px;line-height:1.55}
+iframe.page{width:100%;height:calc(100vh - 250px);min-height:320px;border:1px solid var(--line);
+  border-radius:var(--radius);background:#fff}
+.empty{display:grid;place-items:center;height:100%;color:var(--muted);text-align:center;padding:30px;font-size:15px}
+.empty .big{font-size:21px;font-weight:700;color:var(--text);margin-bottom:8px}
+.err{background:var(--red-weak);color:var(--red-dark);border:1px solid var(--red);
+  border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;font-weight:500}
+.bar{height:3px;background:var(--red-weak);overflow:hidden}
+.bar>i{display:block;height:100%;width:30%;background:var(--red);animation:sweep 1.1s ease-in-out infinite}
+@keyframes sweep{0%{margin-left:-30%}100%{margin-left:100%}}
+/* ── 도움말 ── */
+.tip{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:50%;border:1px solid var(--line-2);
+  color:var(--muted);font-size:11px;font-weight:600;cursor:help;position:relative;flex:none;background:var(--bg);line-height:1}
+.tip:hover,.tip:focus{border-color:var(--black);color:var(--text);outline:none}
+.tip::after{content:attr(data-tip);position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);
+  width:max-content;max-width:300px;white-space:normal;background:var(--black);color:#fff;font-size:13px;font-weight:400;
+  line-height:1.55;padding:8px 11px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.18);
+  opacity:0;visibility:hidden;transition:opacity .12s;z-index:50;pointer-events:none;text-align:left;letter-spacing:0}
+.tip:hover::after,.tip:focus::after{opacity:1;visibility:visible}
+.tip.right::after{left:auto;right:-6px;transform:none}
+.nav button{flex-wrap:wrap;row-gap:0}
+.nav .desc{flex-basis:100%;font-size:12px;font-weight:400;color:var(--faint);line-height:1.4}
+.nav button[aria-selected="true"] .desc{color:#c9c9cf}
+.tlabel[hidden]{display:none}
+.tlabel{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;display:flex;align-items:center;gap:5px}
+.viewnote{font-size:14px;color:var(--muted);background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);
+  padding:10px 14px;margin-bottom:14px}
+.onboard{max-width:760px;margin:10px auto;text-align:left}
+.onboard h2{font-size:21px;font-weight:700;margin:0 0 4px}
+.onboard .lead{color:var(--muted);margin:0 0 18px}
+.steps{display:grid;gap:10px;margin:0 0 18px;padding:0;list-style:none;counter-reset:s}
+.steps li{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px 12px 52px;
+  position:relative;counter-increment:s}
+.steps li::before{content:counter(s);position:absolute;left:16px;top:13px;width:24px;height:24px;border-radius:50%;
+  background:var(--red);color:#fff;font-size:13px;font-weight:600;display:grid;place-items:center}
+.steps b{display:block;font-weight:600;margin-bottom:2px}
+.steps p{margin:0;color:var(--muted);font-size:14px}
+.onboard dl{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;margin:0;font-size:14px;background:var(--bg);
+  border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.onboard dt{font-weight:600}
+.onboard dd{margin:0;color:var(--muted)}
+.onboard h3{font-size:15px;font-weight:600;margin:18px 0 8px}
+@media(max-width:960px){.brand small{display:none}.topinfo .lbl{display:none}}
+@media(max-width:760px){.body{grid-template-columns:1fr}.side{display:none}
+  .setrow{grid-template-columns:1fr}.startform{flex-direction:column}.start h1{font-size:23px}}
+@media(prefers-reduced-motion:reduce){.bar>i{animation:none;width:100%}}
+
+/* ── 온보딩 도움말 ── */
+.help-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;
+  background:var(--red);color:#fff;border-radius:50%;font-size:11px;font-weight:700;
+  cursor:help;position:relative;margin-left:4px}
+.help-tooltip{display:none;position:absolute;bottom:calc(100% + 8px);left:-80px;background:var(--bg);
+  border:1.5px solid var(--red);border-radius:var(--radius);padding:12px 14px;width:280px;
+  box-shadow:0 4px 12px rgba(215,20,30,0.2);z-index:1000;font-size:12px;color:var(--text);
+  line-height:1.5}
+.topact .help-tooltip{bottom:auto;top:calc(100% + 8px);left:auto;right:-80px}
+.help-tooltip::after{content:'';position:absolute;bottom:-6px;left:100px;width:6px;height:6px;
+  background:var(--bg);border-right:1.5px solid var(--red);border-bottom:1.5px solid var(--red);
+  transform:rotate(45deg)}
+.topact .help-tooltip::after{display:none}
+.help-icon:hover .help-tooltip{display:block}
+.onboard-modal{background:var(--bg);border-radius:var(--radius);max-height:90vh;overflow:hidden}
+/* 열렸을 때만 flex 로 둔다. 늘 flex 면 닫아도(open 이 빠져도) 창이 화면에 남는다 */
+.onboard-modal[open]{display:flex;flex-direction:column}
+.onboard-head{padding:20px 22px;background:var(--soft);border-bottom:1px solid var(--line);
+  display:flex;justify-content:space-between;align-items:center}
+.onboard-head h2{font-size:18px;font-weight:700;margin:0}
+.onboard-close{all:unset;width:32px;height:32px;border:1px solid var(--line);border-radius:8px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--muted);
+  font-size:16px;transition:all 80ms}
+.onboard-close:hover{border-color:var(--red);color:var(--red)}
+.onboard-body{flex:1;overflow:auto;padding:20px 22px}
+.onboard-section{margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.onboard-section:last-child{border:none;margin-bottom:0;padding-bottom:0}
+.onboard-section h3{font-size:14px;font-weight:700;margin:0 0 6px;color:var(--text)}
+.onboard-section p{font-size:13px;color:var(--muted);margin:0;line-height:1.6}
+.onboard-example{background:var(--soft);padding:10px 12px;border-radius:8px;font-size:12px;
+  color:var(--text);margin-top:8px;border-left:3px solid var(--red)}
+.onboard-foot{padding:14px 22px;background:var(--soft);border-top:1px solid var(--line);
+  display:flex;justify-content:flex-end;align-items:center}
+.onboard-start{all:unset;padding:10px 18px;background:var(--red);color:#fff;border-radius:8px;
+  cursor:pointer;font-size:13px;font-weight:600;transition:all 80ms}
+.onboard-start:hover{background:var(--red-dark)}
+/* ── 칩 도움말 아이콘 ── */
+.chip-wrapper{position:relative;display:inline-block}
+.chip-help-icon{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;
+  background:var(--black);color:#fff;border-radius:50%;font-size:10px;font-weight:700;cursor:help;flex-shrink:0}
+.chip-help-popup{display:none;position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
+  background:var(--bg);border:1.5px solid var(--black);border-radius:8px;padding:10px 12px;width:280px;
+  box-shadow:0 4px 12px rgba(20,20,20,.2);z-index:2001;font-size:12px;line-height:1.5;white-space:normal}
+.chip-wrapper:hover .chip-help-popup{display:block}
+
+/* ── 앱 시작 화면 ──
+   앱을 켜면 맨 먼저 화면 전체를 덮고, [시작하기]를 누르면 걷혀 주소 입력 화면이 나온다.
+   밝게·어둡게 설정과 무관하게 늘 어두운 화면이라 색을 따로 둔다. */
+.splash{position:fixed;inset:0;z-index:5000;overflow:hidden;background:#111112;color:#f2f2f3;
+  --x:50%;--y:38%;transition:opacity 220ms}
+.splash.leaving{opacity:0}
+.splash :focus-visible{outline-color:#fff}
+/* 배경: 누리집 글 사이에 숨긴 광고. 평소에는 안 보이고, 불빛이 지나가는 자리만 드러난다 */
+.splash-wall{position:absolute;inset:0;overflow:hidden;font-size:15px;line-height:2.5;white-space:nowrap;
+  user-select:none;padding:6px 0}
+.splash-wall .row{display:block}
+.splash-wall span{margin-right:34px}
+/* 두 겹의 글자 자리가 어긋나지 않게 광고 문구의 여백·굵기는 두 겹에 똑같이 준다 */
+.splash-wall .ad{padding:2px 7px;font-weight:600}
+.splash-wall.base{color:rgba(255,255,255,.085)}
+.splash-wall.base .ad{color:transparent}
+.splash-wall.lit{color:rgba(255,255,255,.34);
+  -webkit-mask-image:radial-gradient(circle 210px at var(--x) var(--y),#000 0,#000 35%,transparent 100%);
+  mask-image:radial-gradient(circle 210px at var(--x) var(--y),#000 0,#000 35%,transparent 100%)}
+.splash-wall.lit .ad{color:#fff;background:#d7141e;border-radius:4px}
+.splash-glow{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(circle 260px at var(--x) var(--y),rgba(255,255,255,.07),transparent 70%)}
+.splash-brand{position:absolute;left:24px;top:20px;font-weight:700;font-size:17px;letter-spacing:-.02em;
+  display:flex;align-items:center;gap:9px}
+.splash-brand small{font-weight:400;color:#a3a4ab;font-size:13px}
+/* 가운데 글이 배경 글에 묻히지 않게 어둡게 깔아 준다 */
+.splash-stage{position:absolute;inset:0;display:grid;place-items:center;padding:24px;pointer-events:none;
+  background:radial-gradient(ellipse 520px 360px at 50% 52%,rgba(17,17,18,.94) 0,rgba(17,17,18,.82) 55%,transparent 100%)}
+.splash-card{text-align:center;max-width:560px;pointer-events:auto}
+.splash-mark{width:60px;height:60px;margin-bottom:22px}
+.splash-card h1{font-size:clamp(34px,5.6vw,56px);font-weight:800;line-height:1.2;letter-spacing:-.04em;margin:0 0 14px}
+.splash-card h1 em{font-style:normal;color:#ff4650}
+.splash-sub{color:#a3a4ab;font-size:17px;margin:0 0 34px}
+.splash-go{height:58px;padding:0 44px;border:0;border-radius:var(--radius);background:#d7141e;color:#fff;
+  font-size:18px;font-weight:700;display:inline-flex;align-items:center;gap:10px;transition:background 120ms}
+.splash-go:hover{background:#b00f17}
+.splash-go svg{width:18px;height:18px;transition:transform 160ms}
+.splash-go:hover svg{transform:translateX(3px)}
+.splash-hint{margin:22px 0 0;font-size:13px;color:#77787f}
+@media(prefers-reduced-motion:reduce){.splash,.splash-go,.splash-go svg{transition:none}}
+</style>
+</head>
+<body>
+<!-- 앱 시작 화면: [시작하기]를 누르면 걷힌다 -->
+<div class="splash" id="splash">
+  <div class="splash-wall base" id="splashbase" aria-hidden="true"></div>
+  <div class="splash-wall lit" id="splashlit" aria-hidden="true"></div>
+  <div class="splash-glow" aria-hidden="true"></div>
+  <div class="splash-brand">훤히 <small>공공 누리집 불법광고 점검 도구</small></div>
+  <div class="splash-stage">
+    <div class="splash-card">
+      <svg class="splash-mark" viewBox="0 0 64 64" aria-hidden="true">
+        <rect width="64" height="64" rx="15" fill="#d7141e"/>
+        <path d="M39 38l12 12" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+        <circle cx="28" cy="27" r="14" fill="#f4f4f5" stroke="#fff" stroke-width="5"/>
+        <path d="M23 23h10" stroke="#141414" stroke-width="4" stroke-linecap="round"/>
+        <path d="M21 31h14" stroke="#d7141e" stroke-width="4" stroke-linecap="round"/>
+      </svg>
+      <h1>숨긴 광고를, <em>훤히.</em></h1>
+      <p class="splash-sub">눈에 보이지 않게 심어 둔 불법광고를 찾아 위치와 증거까지 보여 드립니다.</p>
+      <button class="splash-go" id="splashgo" type="button">
+        시작하기
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h12m-5-5 5 5-5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <p class="splash-hint">마우스를 움직여 보십시오. 숨어 있던 광고가 드러납니다.</p>
+    </div>
+  </div>
+</div>
+<!-- 같은 창에서 새로고침했을 때는 시작 화면이 다시 번쩍이지 않게 그리기 전에 감춘다 -->
+<script>try{if(sessionStorage.getItem("hwonhi-splash-done"))document.getElementById("splash").hidden=true}catch(e){}</script>
+<div class="app" id="app">
+
+  <header class="topbar">
+    <div class="brand"><span class="dot">훤</span>훤히 <small>누리집 불법광고 점검</small></div>
+    <div class="topinfo" id="topinfo" hidden>
+      <span class="lbl">점검한 주소</span><span id="topurl"></span>
+      <button id="again" class="btn sm" type="button">다시 점검</button>
+      <button id="recheck" class="btn sm" type="button" title="관리자 화면에서 광고를 지운 뒤 누르십시오. 광고가 나왔던 페이지만 다시 열어 지워졌는지 확인합니다.">조치 확인</button>
+    </div>
+    <div class="topact">
+      <button id="darkmode" class="btn sm ghost" type="button" title="다크모드 전환">🌙</button>
+      <button id="kwbtn" class="btn sm ghost" type="button">
+        탐지 키워드
+        <span class="help-icon" title="탐지 키워드">
+          ?
+          <div class="help-tooltip">
+            <strong>탐지 키워드란?</strong><br>
+            불법광고를 찾기 위해 사용하는 단어들입니다. 직접 추가하거나 기본 제공되는 단어를 끌 수 있습니다.
+          </div>
+        </span>
+      </button>
+      <button id="quickstart" class="btn sm ghost" type="button">🚀 빠른 시작 가이드</button>
+      <button id="help" class="btn sm ghost" type="button">도움말</button>
+      <button id="quit" class="btn sm ghost" type="button">프로그램 종료</button>
+    </div>
+  </header>
+
+  <!-- 1단계: 시작 -->
+  <section class="start" id="start">
+    <div class="start-in">
+      <h1>누리집에 숨은 불법광고를 찾습니다</h1>
+      <p class="lead">점검할 누리집 주소를 넣고 <b>[탐지 시작]</b>을 누르십시오. 그 주소에서 이어지는 페이지·게시글·댓글을 차례로 살펴봅니다.</p>
+      <div class="startform">
+        <input id="url" type="url" placeholder="예: https://www.example.go.kr/board/list" autocomplete="off" aria-label="점검할 누리집 주소">
+        <button id="go" class="btn primary" type="button">
+          탐지 시작
+          <span class="help-icon" title="탐지 시작" style="margin-left:6px">
+            ?
+            <div class="help-tooltip" style="left:-120px">
+              <strong>탐지 시작</strong><br>
+              누리집 주소를 입력하고 이 버튼을 누르면, 그 누리집의 모든 페이지를 자동으로 검사하여 불법광고를 찾습니다.
+            </div>
+          </span>
+        </button>
+      </div>
+      <div id="starterr" class="err" hidden></div>
+      <details class="settings">
+        <summary>점검 설정 <small>기본값 그대로 두어도 됩니다</small></summary>
+        <div class="setlist">
+          <div class="setrow"><label for="maxp">최대 페이지 <input id="maxp" type="number" min="1" max="5000" value="1000"></label>
+            <p>이 수만큼 페이지를 살펴보면 멈춥니다. 보통 1000이면 충분하고, 게시글이 아주 많은 누리집은 늘리십시오. 25분이 넘으면 그때까지의 결과로 마칩니다.</p></div>
+          <div class="setrow"><label><input type="checkbox" id="polite"> 천천히 점검</label>
+            <p><b>실제 기관 누리집을 점검할 때 켜십시오.</b> 페이지 사이에 0.7초씩 쉬고, 누리집의 robots.txt 가 막아 둔 주소는 건너뜁니다. 짧은 시간에 요청이 몰려 보안 관제에서 공격으로 오인되거나 서버에 부담을 주는 일을 막습니다. 300페이지면 3~4분쯤 더 걸립니다.</p></div>
+          <div class="setrow"><label><input type="checkbox" id="attach" checked> 첨부파일 검사</label>
+            <p>게시글에 붙은 PDF·HWP·HWPX 파일 안의 글자도 검사합니다. 파일을 열거나 실행하지는 않습니다.</p></div>
+          <div class="setrow"><label><input type="checkbox" id="reflect" checked> 검색창 점검</label>
+            <p>누리집 검색창이 광고 문구를 그대로 되비춰 구글 검색 결과에 광고가 뜨는 데 악용될 수 있는지 봅니다. 검색창마다 무해한 글자로 한 번만 검색해 봅니다.</p></div>
+          <div class="setrow"><label><input type="checkbox" id="subdomains"> 서브도메인도 점검</label>
+            <p>같은 기관의 다른 주소(예: 게시판이 있는 bbs.기관.go.kr, 기관.go.kr:8080)로 이어지는 링크도 따라가 점검합니다. 끄면 입력한 주소의 누리집만 봅니다(www 유무는 같은 누리집으로 봅니다). 다른 기관 누리집은 켜도 점검하지 않습니다.</p></div>
+          <div class="setrow"><label><input type="checkbox" id="links"> 연계 링크 확인</label>
+            <p>패밀리 사이트·배너처럼 다른 누리집으로 나가는 링크가 도박·성인 광고 사이트로 바뀌지 않았는지 봅니다. 옛 행사 누리집의 도메인이 만료되어 광고 업자에게 넘어간 경우를 찾습니다. 바깥 도메인마다 첫 화면 글자만 한 번 받아 보며, 브라우저로 열지 않으므로 스크립트가 실행되지 않습니다. 공공기관(go.kr 등) 누리집은 조회하지 않습니다. 인터넷이 막힌 PC 에서는 결과가 나오지 않습니다.</p></div>
+          <div class="setrow"><label><input type="checkbox" id="ocrimg"> 그림 속 글자 검사</label>
+            <p>게시글·배너 그림을 받아 Windows 에 내장된 글자 인식으로 읽고, 광고 문구를 그림으로 만들어 올린 경우를 찾습니다. 그림을 받고 읽는 시간이 더 듭니다(같은 그림은 한 번만). 그림은 이 PC 안에서만 읽고 밖으로 보내지 않습니다. 한국어 글자 인식이 없는 PC 에서는 건너뜁니다. 첨부한 그림 파일과 스캔한 PDF 는 이 설정과 관계없이 첨부파일 검사에서 읽습니다.</p></div>
+          <div class="setrow"><label><input type="checkbox" id="cloaking"> 크롤러 위장 검사</label>
+            <p>검색엔진 로봇에게만 광고를 보여주도록 조작된 페이지를 찾습니다. 같은 주소를 한 번 더 열어 보므로 시간이 더 걸립니다.</p></div>
+          <div class="setrow"><span class="name">색인 목록 (선택)</span>
+            <p>구글 Search Console 에서 내려받은 '색인된 페이지' 목록(CSV)을 넣으면, 구글에 이미 올라간 주소에 광고가 보이는지 하나씩 확인합니다. 없으면 넣지 않아도 됩니다.<br>
+              <input type="file" id="idxfile" accept=".csv,.txt,text/csv,text/plain" hidden>
+              <button id="idxbtn" class="btn sm" type="button" style="margin-top:8px">목록 파일 고르기</button></p></div>
+        </div>
+      </details>
+      <div class="startlinks">
+        <button id="back" class="btn sm" type="button" hidden>이전 결과 보기</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2단계: 탐지 중 -->
+  <section class="running" id="running" hidden>
+    <div class="run-in">
+      <div class="big">탐지 중입니다</div>
+      <div class="runurl" id="runurl"></div>
+      <div class="bar"><i></i></div>
+      <p id="runmsg">누리집을 여는 중입니다</p>
+      <p id="runcur"></p>
+      <p class="runnote">찾은 광고는 탐지가 끝나면 결과 화면에 한꺼번에 나옵니다.</p>
+      <button id="stop" class="btn sm" type="button" style="margin-top:14px">탐지 중지</button>
+      <p class="runnote" style="margin-top:6px">중지하면 그때까지 찾은 결과를 보여 주고 결과 파일도 저장합니다.</p>
+    </div>
+  </section>
+
+  <!-- 3단계: 결과 -->
+  <div class="body" id="body" hidden>
+    <aside class="side">
+      <h3>보기</h3>
+      <nav class="nav" id="nav">
+        <button data-tab="list" aria-selected="true">탐지 결과 <span class="cnt" id="c-list">0</span><span class="desc">찾은 광고 목록과 조치 방법</span></button>
+        <button data-tab="evidence" aria-selected="false">증거 보기 <span class="cnt" id="c-ev">0</span><span class="desc">숨긴 광고를 드러내 찍은 사진</span></button>
+        <button data-tab="page" aria-selected="false">누리집 보기<span class="desc">광고 위치를 표시한 실제 페이지</span></button>
+        <button data-tab="source" aria-selected="false">원본 소스<span class="desc">숨긴 광고의 HTML 코드</span></button>
+      </nav>
+      <h3>요약</h3>
+      <div class="stats" id="stats">
+        <div class="stat"><span>찾은 광고</span><b>-</b></div>
+      </div>
+      <div class="foot">
+        <button class="btn sm" id="report" title="결재·보고에 붙일 수 있는 결과 보고서를 엽니다. 인쇄하거나 PDF로 저장할 수 있습니다">보고서 보기·인쇄</button>
+        <button class="btn sm" id="csv" title="보고·취합용 엑셀 파일(CSV)로 저장합니다" style="margin-top:6px">결과 CSV 내려받기</button>
+      </div>
+    </aside>
+
+    <section class="main">
+      <div class="toolbar">
+        <span class="tlabel" id="tlabel" hidden>유형<span class="tip" tabindex="0" data-tip="눌러서 그 유형만 끄고 켤 수 있습니다.">?</span></span>
+        <div class="chips" id="chips"></div>
+        <input id="q" type="search" placeholder="결과에서 찾기 (문구·주소)" aria-label="결과에서 찾기">
+        <select id="statusf">
+          <option value="all">조치 상태: 전체</option>
+          <option value="open">미조치</option>
+          <option value="done">조치완료 (확인됨)</option>
+          <option value="fp">오탐 처리</option>
+          <option value="new">지난 점검 뒤 새로 생긴 것</option>
+        </select>
+      </div>
+      <div class="view" id="view"></div>
+    </section>
+  </div>
+
+  <footer class="status">
+    <span id="st-left">대기 중</span>
+    <span class="sp" id="st-right"></span>
+  </footer>
+</div>
+
+<dialog class="help" id="kwdlg" aria-label="탐지 키워드" style="max-width:860px">
+  <div class="kw-in">
+    <button class="btn sm help-close" id="kwclose" type="button">닫기</button>
+    <h2>탐지 키워드</h2>
+    <p class="lead">광고 여부를 가르는 표현 목록입니다. 단어를 더하거나 기본 단어를 끌 수 있고, 바꾼 내용은 <b>다음 탐지부터</b> 적용됩니다.</p>
+    <div class="kwbox">
+      <h3>문장 시험해 보기</h3>
+      <div class="kwrow"><input id="kwtest" placeholder="예: 성인 라방 무료 입장 텔레 @abc123"><button id="kwtestgo" class="btn sm" type="button">판정 보기</button></div>
+      <p class="kwmsg" id="kwtestout">단어를 더하기 전에, 정상 공지 문장이 광고로 잡히지 않는지 여기서 확인하십시오.</p>
+    </div>
+    <div class="kwbox">
+      <h3>단어 더하기</h3>
+      <div class="kwrow"><select id="kwcatsel"></select><input id="kwword" placeholder="더할 단어 (띄어쓰기는 무시됩니다)"><button id="kwadd" class="btn sm" type="button">더하기</button></div>
+      <p class="kwmsg" id="kwaddout"></p>
+    </div>
+    <div class="kwrow" style="margin:4px 0 10px"><input id="kwfind" type="search" placeholder="목록에서 찾기"></div>
+    <div id="kwcats"></div>
+    <div class="kwfoot"><span>기본 단어는 눌러서 끄고 켭니다. 빨간 단어는 직접 더한 것이며 눌러서 지웁니다.</span>
+      <button id="kwreset" class="btn sm" type="button">기본값으로 되돌리기</button></div>
+  </div>
+</dialog>
+
+<dialog class="help" id="guide" aria-label="사용 방법">
+  <div class="help-in">
+    <button class="btn sm help-close" id="guideclose" type="button">닫기</button>
+    <div id="guidebody"></div>
+  </div>
+</dialog>
+
+<dialog class="help onboard-modal" id="onboard" aria-label="빠른 시작">
+  <div class="onboard-head">
+    <h2>🚀 빠른 시작</h2>
+    <button class="onboard-close" id="onboardclose" type="button">✕</button>
+  </div>
+  <div class="onboard-body">
+    <div class="onboard-section">
+      <h3>1️⃣ 탐지 시작</h3>
+      <p>점검할 누리집 주소를 입력하고 <b>"탐지 시작"</b> 버튼을 클릭합니다. 그 누리집의 모든 페이지가 자동으로 검사됩니다.</p>
+      <div class="onboard-example">예) example.gov.kr 입력 후 탐지 시작 → 자동 검사 시작</div>
+    </div>
+    <div class="onboard-section">
+      <h3>2️⃣ 결과 확인</h3>
+      <p>검사가 끝나면 탐지된 불법광고 목록이 나타납니다. 각 광고마다 <b>"어떻게 지울 것인지"</b> 설명을 볼 수 있습니다.</p>
+      <div class="onboard-example">위치 • 탐지 기법 • 삭제 방법을 한눈에 확인</div>
+    </div>
+    <div class="onboard-section">
+      <h3>3️⃣ 조치하고 확인</h3>
+      <p>누리집 관리자 페이지에서 광고를 삭제한 후, <b>"조치 확인"</b> 버튼을 누르면 정말 삭제되었는지 다시 검사합니다.</p>
+      <div class="onboard-example">광고가 모두 사라지면 완료! 🎉</div>
+    </div>
+  </div>
+  <div class="onboard-foot">
+    <button class="onboard-start" id="onboardstart">시작하기</button>
+  </div>
+</dialog>
+
+<script>
+const TECHS = { HOMOGLYPH:"닮은꼴 글자 위장", JAMO:"자모 분해",
+  TRANSPARENT:"투명 텍스트", OFFSCREEN:"화면 밖 은닉", ETC:"추가 유형" };
+const GUIDE = {
+  HOMOGLYPH:["게시물 작성·수정 화면에서 해당 문자열을 삭제합니다.",
+    "입력 단계에서 전각·키릴 문자가 섞인 문자열을 차단하도록 게시판 필터를 보완합니다."],
+  JAMO:["게시물에서 자모로 분해된 문자열을 삭제합니다.",
+    "자모만 연속되는 입력을 걸러내는 검증 규칙을 추가합니다."],
+  TRANSPARENT:["해당 요소와 인라인 스타일을 함께 제거합니다.",
+    "편집기에서 색상·투명도 인라인 스타일 사용을 제한합니다."],
+  OFFSCREEN:["숨겨진 요소를 삭제합니다. 화면에 보이지 않으므로 소스 보기로 확인해야 합니다.",
+    "검색엔진에 이미 수집되었을 수 있으므로 색인 삭제를 함께 요청합니다."],
+  ETC:["검출된 위치를 확인해 해당 문구나 요소를 삭제합니다.",
+    "크롤러 위장인 경우 서버 설정이나 삽입된 스크립트를 함께 점검합니다."],
+};
+const STATUS = { open:"미조치", done:"조치완료", fp:"오탐 처리" };
+// 담당자가 직접 고르는 상태. '조치완료'는 [조치 확인]으로 광고가 사라진 것을 확인했을 때만 붙는다
+const PICK = { open:"미조치", fp:"오탐 처리" };
+const CHECK = { gone:"사라짐", deleted:"페이지 삭제됨", present:"아직 있음", unknown:"확인 못 함", skipped:"다시 점검으로 확인" };
+const shortTime = (iso) => (iso || "").replace("T", " ").slice(5, 16).replace("-", "/");
+// 유형 이름표에 마우스를 올리면 보이는 설명
+const TECH_DESC = {
+  HOMOGLYPH:"비슷한 글자로 바꿔서 필터를 피합니다<br>예: 토토사이트 → то토Оа이트",
+  JAMO:"글자를 쪼개서 풀어서 필터를 피합니다<br>예: 토토 → ㅌㅗㅌㅗ",
+  TRANSPARENT:"글자를 투명하게 만들어서 안 보이게 합니다<br>예: 흰색 글자 + 흰 배경",
+  OFFSCREEN:"글자를 화면 밖에 숨깁니다",
+};
+const EXTRA_DESC = {
+  VISIBLE_AD:"숨기지 않고 게시판·방명록·댓글에 그대로 올린 광고 글",
+  OCCLUDED:"다른 요소로 덮어 가린 광고",
+  META_SPAM:"페이지 제목·설명(메타 태그)에 넣은 광고. 화면에는 안 보여도 검색 결과에 뜹니다",
+  ATTR_SPAM:"그림 대체 글(alt) 같은 속성값에 숨긴 광고",
+  LINK_SPAM:"화면에 드러나지 않는 외부 도박·성인 사이트 링크",
+  CLOAKING:"검색엔진 로봇에게만 광고를 보여주는 조작",
+  ATTACHMENT_AD:"첨부파일(PDF·HWP·오피스 문서·zip·그림) 안에 넣은 광고",
+  IMAGE_TEXT_AD:"광고 문구를 그림으로 만들어 올린 것. 글자 인식(OCR)으로 읽었습니다",
+  SEARCH_REFLECT:"검색창이 입력한 글자를 그대로 되비춰, 광고 문구를 넣은 검색 주소가 구글에 올라갈 수 있는 상태",
+  SEARCH_INDEXED:"구글 등에 이미 올라간 주소에서 광고가 보이는 상태",
+  LINK_HIJACKED:"누리집이 걸어 둔 바깥 링크의 목적지가 광고 사이트로 바뀌었거나, 도메인이 만료되어 누구나 살 수 있는 상태",
+};
+function techDesc(f) {
+  if (f.technique === "ETC" && f.extra_finding) return EXTRA_DESC[f.extra_finding.split("(")[0]] || "";
+  return TECH_DESC[f.technique] || "";
+}
+
+/* ── 도움말 ── */
+const ONBOARD = `
+<div class="onboard" style="margin:0">
+  <h2>사용 방법</h2>
+  <p class="lead">누리집 안에 숨겨지거나 몰래 올라간 불법광고(도박·성인·마약·대포통장 등)를 찾아 위치와 조치 방법을 알려 줍니다.</p>
+  <ol class="steps">
+    <li><b>점검할 누리집 주소를 넣습니다</b><p>시작 화면 입력칸에 첫 화면이나 게시판 주소를 넣습니다. 그 주소에서 이어지는 페이지·게시글·댓글을 차례로 살펴봅니다.</p></li>
+    <li><b>점검 설정은 그대로 두어도 됩니다</b><p>'점검 설정'을 펼치면 최대 페이지와 첨부파일·검색창 점검 여부를 바꿀 수 있습니다. 구글 Search Console 목록이 있으면 여기서 함께 넣습니다.</p></li>
+    <li><b>[탐지 시작]을 누릅니다</b><p>300페이지 기준 보통 몇 분 걸립니다. 끝나면 결과 화면으로 바뀌고, 결과 파일(result.json)도 자동으로 저장됩니다. 위쪽 [다시 점검]으로 다른 주소를 점검합니다.</p></li>
+  </ol>
+  <h3>결과는 이렇게 봅니다</h3>
+  <dl>
+    <dt>탐지 결과</dt><dd>찾은 광고를 페이지별로 보여 줍니다. 항목마다 '조치 방법'을 펼치면 무엇을 지워야 하는지 나옵니다.</dd>
+    <dt>증거 보기</dt><dd>숨겨져 있던 광고를 드러내 찍은 사진입니다. 보고서에 붙일 때 씁니다.</dd>
+    <dt>누리집 보기</dt><dd>점검 당시 페이지에서 광고 위치를 빨간 테두리로 표시합니다.</dd>
+    <dt>조치 확인</dt><dd>누리집 관리자 화면에서 광고를 지운 뒤 위쪽 [조치 확인]을 누르면, 광고가 나왔던 페이지만 다시 열어 정말 지워졌는지 확인합니다. 사라진 광고는 자동으로 '조치완료'가 됩니다. 지운 광고가 다른 페이지에 새로 올라온 것은 [다시 점검]으로 찾습니다.</dd>
+    <dt>오탐 처리·메모</dt><dd>광고가 아닌 항목은 '오탐 처리'로 바꾸고, 항목마다 메모를 남길 수 있습니다. 다음 점검 때도 유지됩니다.</dd>
+    <dt>결과 CSV</dt><dd>왼쪽 아래 버튼으로 엑셀에서 여는 보고용 파일을 받습니다.</dd>
+  </dl>
+</div>`;
+function showGuide() { $("guidebody").innerHTML = ONBOARD; $("guide").showModal(); }
+
+/* ── 화면 단계 ── */
+function setStage(stage) {
+  $("app").dataset.stage = stage;
+  $("start").hidden = stage !== "start";
+  $("running").hidden = stage !== "running";
+  $("body").hidden = stage !== "result";
+  $("topinfo").hidden = stage !== "result";
+  if (stage === "start") {
+    $("back").hidden = !DATA.meta;           // 결과를 본 뒤 돌아왔으면 다시 결과로 갈 수 있게
+    $("url").focus();
+  }
+}
+
+let DATA = { findings: [], meta: null };
+let hidden = new Set(), activeTab = "list", pageTarget = null, poll = null;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g,
+  (c) => ({ "&":"&","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+
+const LOST = "훤히 프로그램과 연결이 끊어졌습니다. 창을 닫고 훤히를 다시 실행해 주십시오.";
+
+async function api(path, opts) {
+  let r;
+  try { r = await fetch(path, opts); } catch (e) { throw new Error(LOST); }
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error || r.statusText);
+  return r.json();
+}
+function guideFor(f) {
+  if (!f.guide) return GUIDE[f.technique] || [];
+  if (!(f.extra_finding || "").startsWith("SEARCH_REFLECT")) return [f.guide];
+  return [f.guide, "이미 색인된 검색 주소가 있는지 Search Console 에서 확인하고, 있으면 삭제를 요청합니다. "
+    + "시작 화면 '점검 설정'의 색인 목록에 내려받은 목록을 넣으면 한꺼번에 확인할 수 있습니다."];
+}
+function techLabel(f) {
+  if (f.technique === "ETC" && f.extra_finding) {
+    return f.extra_finding.replace(/^[A-Z_]+\(/, "").replace(/\)$/, "");
+  }
+  return TECHS[f.technique] || f.technique;
+}
+
+/* ── 탐지 ── */
+$("go").addEventListener("click", async () => {
+  $("starterr").hidden = true;
+  try {
+    await api("/api/scan", { method:"POST", headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify({ url:$("url").value, max_pages:Number($("maxp").value) || 1000,
+                             cloaking:$("cloaking").checked, attachments:$("attach").checked,
+                             search_reflect:$("reflect").checked, subdomains:$("subdomains").checked,
+                             polite:$("polite").checked, check_links:$("links").checked,
+                             ocr_images:$("ocrimg").checked,
+                             index_csv:indexCsv }) });
+    startRunning($("url").value);
+  } catch (e) { showStartError(e.message); }
+});
+$("url").addEventListener("keydown", (ev) => { if (ev.key === "Enter") $("go").click(); });
+function startRunning(url) {
+  $("go").disabled = true;
+  $("stop").disabled = false;
+  $("stop").textContent = "탐지 중지";
+  $("runurl").textContent = url || "";
+  $("runmsg").textContent = "누리집을 여는 중입니다";
+  $("runcur").textContent = "";
+  setStage("running");
+  poll = setInterval(tick, 500);
+}
+$("again").addEventListener("click", () => setStage("start"));
+$("recheck").addEventListener("click", async () => {
+  const btn = $("recheck");
+  try {
+    await api("/api/recheck", { method:"POST", headers:{ "Content-Type":"application/json" }, body:"{}" });
+  } catch (e) { return alert(e.message); }
+  btn.disabled = $("again").disabled = true;
+  const t = setInterval(async () => {
+    const s = await api("/api/status");
+    btn.textContent = s.recheck_total ? `조치 확인 중 ${s.recheck_done}/${s.recheck_total}` : "조치 확인 준비 중";
+    $("st-left").textContent = s.recheck_total ? `조치 확인 중 · 페이지 ${s.recheck_done}/${s.recheck_total}` : "조치 확인 준비 중";
+    if (s.rechecking) return;
+    clearInterval(t);
+    btn.disabled = $("again").disabled = false;
+    btn.textContent = "조치 확인";
+    if (s.error) alert(s.error);
+    await load();
+  }, 700);
+});
+$("back").addEventListener("click", () => { setStage("result"); renderChips(); render(); });
+/* ── 색인 목록(Search Console CSV) ── */
+let indexCsv = null;
+$("idxbtn").addEventListener("click", () => {
+  if (indexCsv) {                     // 넣은 목록을 한 번 더 누르면 뺀다
+    indexCsv = null; $("idxfile").value = "";
+    $("idxbtn").textContent = "목록 파일 고르기"; $("idxbtn").classList.remove("on");
+    return;
+  }
+  $("idxfile").click();
+});
+$("idxfile").addEventListener("change", async () => {
+  const file = $("idxfile").files[0];
+  if (!file) return;
+  // 인코딩(UTF-8/CP949)은 서버에서 판별하도록 원본 바이트를 그대로 보낸다
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  indexCsv = btoa(bin);
+  $("idxbtn").textContent = `색인 목록: ${file.name} ✕`;
+  $("idxbtn").classList.add("on");
+});
+
+function showStartError(msg) {
+  $("starterr").textContent = msg;
+  $("starterr").hidden = false;
+}
+async function tick() {
+  const s = await api("/api/status");
+  $("st-left").textContent = `탐지 중 · 확인한 페이지 ${s.pages_done}개 · ${s.elapsed}초`;
+  $("st-right").textContent = "";
+  // 숫자는 광고 수가 아니라 확인을 마친 페이지 수다. 첫 페이지가 열리기 전(브라우저 준비 중)에는 0 이라 따로 알린다
+  $("runmsg").textContent = s.pages_done
+    ? `확인한 페이지 ${s.pages_done}개 · ${s.elapsed}초 지남`
+    : `브라우저를 준비하고 첫 페이지를 여는 중입니다 · ${s.elapsed}초 지남`;
+  $("runcur").textContent = s.current ? `지금 보는 페이지: ${s.current}` : "";
+  if (s.stopping) $("runmsg").textContent = "지금 보던 페이지까지 마치고 멈추는 중입니다";
+  if (s.running) return;
+  clearInterval(poll);
+  $("go").disabled = false;
+  if (s.error) {
+    $("st-left").textContent = "오류";
+    setStage("start");
+    return showStartError("탐지 중 오류 — " + s.error);
+  }
+  if (s.has_result) await load();
+}
+async function load(stay) {
+  DATA = await api("/api/result");
+  const m = DATA.meta || {};
+  const when = (m.finished_at || "").replace("T", " ").slice(0, 16);
+  const stop = (m.stopped ? " · 중지됨(일부만 점검)" : "")
+    + (m.coverage && m.coverage.failed_count ? ` · 열지 못함 ${m.coverage.failed_count}개` : "");
+  $("st-left").textContent = `${stay ? "지난 결과" : "완료"} · 페이지 ${m.page_count}개 · ${m.elapsed_sec}초${stop}`;
+  $("st-right").textContent = `결과 파일: ${m.out_dir || ""}`;
+  $("topurl").textContent = m.entry_url || "";
+  $("topurl").title = m.entry_url || "";
+  if (!$("url").value) $("url").value = m.entry_url || "";   // [다시 점검] 때 같은 주소를 바로 다시 쓸 수 있게
+  // 프로그램을 다시 켰을 때는 시작 화면에 두고, 지난 결과로 갈 수 있는 단추만 보인다
+  $("back").textContent = stay ? `지난 결과 보기 (${when} · ${DATA.findings.length}건)` : "이전 결과 보기";
+  if (stay) return setStage("start");
+  setStage("result");
+  renderChips(); render();
+}
+
+/* ── 필터 ── */
+function renderChips() {
+  const counts = {};
+  DATA.findings.forEach((f) => (counts[f.technique] = (counts[f.technique] || 0) + 1));
+  $("chips").innerHTML = "";
+  $("tlabel").hidden = !DATA.findings.length;
+  Object.keys(TECHS).filter((t) => t !== "ETC" || counts.ETC).forEach((t) => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "chip-wrapper";
+
+    const b = document.createElement("button");
+    b.className = "chip";
+    b.setAttribute("aria-pressed", String(!hidden.has(t)));
+    b.innerHTML = `${TECHS[t]} <span class="chip-help-icon">?</span>`;
+    b.onclick = () => { hidden.has(t) ? hidden.delete(t) : hidden.add(t); renderChips(); render(); };
+
+    const popup = document.createElement("div");
+    popup.className = "chip-help-popup";
+    popup.innerHTML = `<strong>${TECHS[t]}</strong><br>${TECH_DESC[t] || ""}`;
+
+    wrapper.appendChild(b);
+    wrapper.appendChild(popup);
+    $("chips").appendChild(wrapper);
+  });
+}
+function visible() {
+  const q = $("q").value.trim().toLowerCase(), st = $("statusf").value;
+  return DATA.findings.filter((f) =>
+    !hidden.has(f.technique) && (st === "all" || (st === "new" ? f.is_new : f.status === st)) &&
+    (!q || (f.evidence_text + showUrl(f.url) + f.location + f.normalized).toLowerCase().includes(q)))
+    .sort((a, b) => urgency(a) - urgency(b));
+}
+// 실제 노출 중인 광고를 먼저, 악용 가능성(취약·주의)은 뒤에 보인다
+const urgency = (f) => ({ "취약": 1, "주의": 2 }[f.grade] || 0);
+// 색인 목록 주소는 한글 검색어가 %EC.. 로 인코딩되어 있어 사람이 읽을 수 있게 풀어 보인다
+function showUrl(u) {
+  try { return decodeURIComponent(u.replace(/\+/g, " ")); } catch (e) { return u; }
+}
+// 메뉴·하단·위젯처럼 모든 페이지가 함께 쓰는 공통 서식에 든 광고는 페이지마다 같은 위치·같은 문구로
+// 잡힌다. 결과 파일(result.json)에는 요강대로 페이지마다 적되, 화면에서는 한 줄로 묶어 보인다.
+const SHARED_MIN = 3;
+function adCount(rows) {
+  const shared = sharedGroups(rows), inShared = new Set(shared.flat());
+  return shared.length + new Set(rows.filter((r) => !inShared.has(r)).map((r) => r.url + "\u0000" + r.location)).size;
+}
+function sharedGroups(rows) {
+  const m = new Map();
+  rows.forEach((r) => {
+    const k = r.technique + "\u0000" + r.location + "\u0000" + r.evidence_text;
+    if (!m.has(k)) m.set(k, []);
+    m.get(k).push(r);
+  });
+  return [...m.values()].filter((g) => new Set(g.map((r) => r.url)).size >= SHARED_MIN);
+}
+function byElement(rows) {
+  const map = new Map();
+  rows.forEach((r) => {
+    // 공통 서식에 든 같은 광고는 증거 사진 한 장을 함께 쓰므로 사진 기준으로 묶는다
+    const k = r.evidence_image || r.evidence_key || r.location;
+    if (!map.has(k)) map.set(k, { key:k, rows:[], ref:r });
+    map.get(k).rows.push(r);
+  });
+  return [...map.values()];
+}
+
+/* ── 사이드바 ── */
+function setTab(name, focusKey) {
+  activeTab = name;
+  document.querySelectorAll("#nav button").forEach((b) =>
+    b.setAttribute("aria-selected", String(b.dataset.tab === name)));
+  render(focusKey);
+}
+document.querySelectorAll("#nav button").forEach((b) => (b.onclick = () => setTab(b.dataset.tab)));
+
+/* ── 그리기 ── */
+function render(focusKey) {
+  const rows = visible(), groups = byElement(rows);
+  $("c-list").textContent = rows.length;
+  $("c-ev").textContent = groups.filter((g) => g.ref.evidence_key).length;
+  const pages = new Set(DATA.findings.map((f) => f.url)).size;
+  const rc = DATA.meta && DATA.meta.recheck;
+  // 광고 수는 기법별 건수가 아니라 광고 개수로 센다 (공통 서식에 든 같은 광고는 하나)
+  $("stats").innerHTML = [["광고", adCount(DATA.findings)], ["광고가 있는 페이지", pages]]
+    .concat(rc ? [[`남은 광고 (${shortTime(rc.at)} 확인)`, adCount(DATA.findings.filter((f) => f.status === "open"))]] : [])
+    .concat(DATA.meta && DATA.meta.history ? [["지난 점검 뒤 새로 생김", DATA.findings.filter((f) => f.is_new).length],
+                                             ["지난 점검 뒤 사라짐", DATA.meta.history.gone_count]] : []).map(([k, v]) => `<div class="stat${k.startsWith("남은 광고") && v ? " hot" : ""}"><span>${k}</span><b>${v}</b></div>`).join("");
+
+  if (!DATA.findings.length) {
+    const c = (DATA.meta || {}).coverage || {};
+    const msg = !(DATA.meta || {}).page_count
+      ? '<div class="big">점검하지 못했습니다</div>진입 주소가 열리지 않아 한 페이지도 보지 못했습니다. 아래 사유를 확인하고 주소·접속 상태를 점검한 뒤 다시 시도하십시오.'
+      : c.failed_count
+        ? `<div class="big">불법광고를 찾지 못했습니다</div>다만 페이지 ${c.failed_count}개는 열지 못해 점검되지 않았습니다. 위 목록을 확인하십시오.`
+        : '<div class="big">불법광고를 찾지 못했습니다</div>점검이 끝났습니다. 결과 파일은 아래 표시된 폴더에 저장되었습니다.';
+    $("view").innerHTML = notices() + `<div class="empty"><div>${msg}</div></div>`;
+    return;
+  }
+  if (!rows.length) {
+    $("view").innerHTML = '<div class="empty"><div>조건에 맞는 항목이 없습니다.<br>위쪽 유형 단추나 조치 상태 선택을 확인해 보십시오.</div></div>';
+    return;
+  }
+  ({ list: viewList, evidence: viewEvidence, page: viewPage, source: viewSource }[activeTab])(rows, groups, focusKey);
+}
+
+const STOP_NOTE = { user:"탐지를 중지해 일부 페이지만 점검한 결과입니다.",
+                    time:"점검 시간 상한(25분)에 닿아 일부 페이지만 점검한 결과입니다. 최대 페이지를 줄이거나 게시판 주소를 따로 넣어 점검하십시오.",
+                    blocked:"페이지가 잇달아 열리지 않아 점검을 멈췄습니다. 서버가 요청을 막았거나 접속 장애가 의심됩니다. 누리집 담당자에게 점검 사실을 알리고 [천천히 점검]으로 다시 점검하십시오." };
+const FAIL = { timeout:"응답 시간 초과", network:"접속 오류", server:"서버 오류", blocked:"접근 거부",
+               error:"열기 오류", partial:"끝까지 읽지 못함", gone:"없는 주소" };
+/* 점검 범위: 열지 못한 페이지·열지 않은 주소. '0건'이 깨끗해서인지 못 봐서인지 알 수 있게 한다 */
+function coverageNotice() {
+  const c = (DATA.meta || {}).coverage;
+  if (!c) return "";
+  const parts = [];
+  if (c.failed_count) parts.push(`<details><summary><b>열지 못했거나 끝까지 읽지 못한 페이지 ${c.failed_count}개</b> — 이 페이지들은 점검되지 않았습니다 (`
+    + Object.entries(c.failed_kinds || {}).map(([k, n]) => `${esc(FAIL[k] || k)} ${n}`).join(", ") + `)</summary>
+    <ul>${c.failed.map((f) => `<li>${esc(showUrl(f.url))} — ${esc(FAIL[f.reason] || f.reason)}${f.status ? ` (${f.status})` : ""}</li>`).join("")}</ul>
+    ${c.failed_count > c.failed.length ? `<p>외 ${c.failed_count - c.failed.length}개는 결과 폴더의 scan_coverage.json 에 있습니다.</p>` : ""}</details>`);
+  if (c.left_count) parts.push(`<details><summary>${(DATA.meta || {}).stopped ? "열지 않은 주소" : `최대 페이지 수(${c.max_pages})에 닿아 열지 않은 주소`} ${c.left_count}개</summary>
+    <ul>${c.left.map((u) => `<li>${esc(showUrl(u))}</li>`).join("")}</ul></details>`);
+  if (c.gone_count) parts.push(`<details><summary>없는 주소(404 등) ${c.gone_count}개 — 누리집에 깨진 링크가 있습니다</summary>
+    <ul>${c.gone.map((f) => `<li>${esc(showUrl(f.url))} (${f.status})</li>`).join("")}</ul></details>`);
+  return parts.length ? `<div class="notice">${parts.join("")}</div>` : "";
+}
+function notices() {
+  const m = DATA.meta || {}, h = m.history;
+  let out = m.save_error ? `<div class="notice">${esc(m.save_error)}</div>` : "";
+  out += m.stopped ? `<div class="notice">${esc(STOP_NOTE[m.stopped] || "")}</div>` : "";
+  out += coverageNotice();
+  if (m.recheck) {
+    const c = http://m.recheck.counts;
+    out += `<div class="notice">${esc(shortTime(http://m.recheck.at))} 조치 확인: ` +
+      Object.keys(CHECK).filter((k) => c[k]).map((k) => `${CHECK[k]} ${c[k]}건`).join(" · ") +
+      `. 지운 광고가 다른 페이지에 새로 올라왔는지는 [다시 점검]으로 확인하십시오.</div>`;
+  }
+  if (h && h.gone_count) {
+    out += `<details class="notice"><summary>지난 점검(${esc((h.prev_finished || "").replace("T", " ").slice(0, 16))}) 때 있던 광고 ${h.gone_count}건이 이번에는 보이지 않습니다. 지워졌거나 조치된 것으로 보입니다.</summary>
+      <ul>${h.gone.map((g) => `<li>${esc(showUrl(g.url))} — ${esc((g.evidence_text || "").slice(0, 60))}</li>`).join("")}</ul></details>`;
+  }
+  return out;
+}
+function viewList(rows) {
+  const view = $("view"); view.innerHTML = notices();
+  const shared = sharedGroups(rows), inShared = new Set(shared.flat());
+  if (shared.length) {
+    const g = document.createElement("div"); g.className = "group";
+    const h = document.createElement("div"); h.className = "grouphead";
+    h.innerHTML = `<span>여러 페이지에 똑같이 들어 있는 광고 (공통 서식)</span><span>${shared.length}종 · ${inShared.size}건</span>`;
+    g.appendChild(h);
+    shared.forEach((same) => g.appendChild(itemEl(same[0], same)));
+    view.appendChild(g);
+  }
+  const rest = rows.filter((r) => !inShared.has(r));
+  [...new Set(rest.map((r) => r.url))].forEach((url) => {
+    const mine = rest.filter((r) => r.url === url);
+    const g = document.createElement("div"); g.className = "group";
+    const h = document.createElement("div"); h.className = "grouphead";
+    h.innerHTML = `<span>${esc(showUrl(url))}</span><span>${mine.length}건</span>`;
+    g.appendChild(h);
+    mine.forEach((f) => g.appendChild(itemEl(f)));
+    view.appendChild(g);
+  });
+}
+function itemEl(f, same) {
+  const el = document.createElement("div");
+  const pages = same ? [...new Set(same.map((r) => r.url))] : null;
+  el.className = "item" + (f.status === "done" ? " done" : f.status === "fp" ? " fp" : "");
+  el.innerHTML = `
+    <div class="head"><span class="badge b-${f.technique}" title="${esc(techDesc(f))}">${esc(techLabel(f))}</span>
+      ${f.is_new ? '<span class="grade g-새로" title="지난 점검 때는 없던 광고입니다">새로 생김</span>' : ""}
+      ${f.grade ? `<span class="grade g-${esc(f.grade.replace(/\s/g, ""))}">${esc(f.grade)}</span>` : ""}
+      ${f.carried && f.status === "fp" ? '<span class="grade" title="게시판 글 순서가 바뀌어 위치가 달라졌지만, 같은 페이지의 같은 문구를 지난번에 오탐 처리했습니다">오탐 처리 이어받음</span>' : ""}
+      ${f.check ? `<span class="grade c-${esc(f.check)}" title="${esc(shortTime(f.checked_at))} 조치 확인 결과">${esc(shortTime(f.checked_at))} ${esc(CHECK[f.check] || f.check)}</span>` : ""}
+      <span class="reason">${esc(f.reason)}</span></div>
+    ${f.technique !== "ETC" && techDesc(f) ? `<p class="reason" style="margin:-4px 0 8px;font-size:13px">${esc(techDesc(f))}</p>` : ""}
+    <div class="ev">${esc(f.evidence_text)}</div>
+    ${pages ? `<div class="notice" style="margin:8px 0">이 광고가 <b>페이지 ${pages.length}곳</b>에 같은 위치·같은 문구로 들어 있습니다.
+      메뉴·하단·배너·위젯처럼 모든 페이지가 함께 쓰는 공통 서식(템플릿)에 심어진 것으로 보입니다.
+      페이지마다 지우지 말고 공통 서식에서 한 번 지우십시오. 아래 오탐 처리·메모는 ${pages.length}곳 모두에 함께 적용됩니다.
+      <details><summary>페이지 목록 보기</summary><ul>${pages.map((u) => `<li>${esc(showUrl(u))}</li>`).join("")}</ul></details></div>` : ""}
+    <dl class="kv">
+      ${f.normalized ? `<dt>복원한 글자</dt><dd><code>${esc(f.normalized)}</code></dd>` : ""}
+      <dt>${f.grade ? "판정 근거" : "광고로 본 근거"}</dt><dd>${f.keywords.map((k) => `<code>${esc(k)}</code>`).join(" ") || "-"}</dd>
+      <dt>위치</dt><dd><code title="페이지 안에서 이 글을 가리키는 CSS 선택자">${esc(f.location)}</code>
+        <button class="btn sm copy">복사</button>
+        ${f.evidence_key ? '<button class="btn sm toev">숨김 풀어 보기</button>' : ""}
+        <button class="btn sm topage">누리집에서 보기</button></dd>
+    </dl>
+    <details><summary>조치 방법</summary>
+      <div class="guide"><ol>${guideFor(f).map((g) => `<li>${esc(g)}</li>`).join("")}</ol></div>
+    </details>
+    <div class="manage">
+      <select title="'조치완료'는 [조치 확인]으로 광고가 사라진 것을 확인하면 자동으로 붙습니다">${
+        (f.status === "done" ? '<option value="done" selected disabled>조치완료 (확인됨)</option>' : "") +
+        Object.entries(PICK).map(([v, t]) => `<option value="${v}"${f.status === v ? " selected" : ""}>${t}</option>`).join("")}</select>
+      <input placeholder="담당자 메모 (자동 저장)" value="${esc(f.memo)}">
+    </div>`;
+  el.querySelector(".copy").onclick = (ev) => navigator.clipboard.writeText(f.location).then(() => {
+    ev.target.textContent = "복사됨"; setTimeout(() => (ev.target.textContent = "복사"), 1200);
+  });
+  const toev = el.querySelector(".toev");
+  if (toev) toev.onclick = () => setTab("evidence", f.evidence_key);
+  el.querySelector(".topage").onclick = () => { pageTarget = f; setTab("page", f.evidence_key); };
+  const sel = el.querySelector("select");
+  const targets = same || [f];
+  const saveAll = (patch, quiet) => targets.forEach((r, i) => save(r, patch, quiet || i < targets.length - 1));
+  sel.onchange = () => saveAll({ status: sel.value });
+  const memo = el.querySelector(".manage input");
+  let t = null;
+  memo.oninput = () => { clearTimeout(t); t = setTimeout(() => saveAll({ memo: memo.value }, true), 500); };
+  return el;
+}
+function headLine(g) {
+  const urls = [...new Set(g.rows.map((r) => r.url))];
+  const techs = [...new Map(g.rows.map((r) => [r.technique, r])).values()];
+  return `<div class="head">${techs.map((r) =>
+    `<span class="badge b-${r.technique}">${esc(techLabel(r))}</span>`).join(" ")}
+    <span class="reason">${esc(g.ref.url)}${urls.length > 1 ? ` 외 ${urls.length - 1}곳 (공통 서식)` : ""}</span></div>`;
+}
+// 증거 사진·원본 코드는 숨긴 광고(주요 4종)에만 있다
+const withEvidence = (groups) => groups.filter((g) => g.ref.evidence_key);
+const NO_EVIDENCE = '<div class="empty"><div>숨긴 광고가 없어 볼 증거가 없습니다.<br>게시판 노출 광고·검색창 점검 같은 항목은 탐지 결과에서 확인하십시오.</div></div>';
+function viewEvidence(rows, groups, focusKey) {
+  groups = withEvidence(groups);
+  if (!groups.length) { $("view").innerHTML = NO_EVIDENCE; return; }
+  $("view").innerHTML = '<div class="viewnote">숨겨져 있던 광고를 화면에 드러나게 바꾼 뒤 찍은 사진입니다. 실제 누리집에는 이렇게 보이지 않습니다.</div>' + groups.map((g) => `
+    <div class="card${g.key === focusKey ? " target" : ""}" data-key="${esc(g.key)}">
+      ${headLine(g)}
+      <div class="ev">${esc(g.ref.evidence_text)}</div>
+      ${g.ref.evidence_image
+        ? `<div class="shot"><img src="${esc(g.ref.evidence_image)}" alt="숨겨진 광고를 드러낸 화면"></div>`
+        : '<p class="reason">탐지하지 못했습니다.</p>'}
+    </div>`).join("");
+  if (focusKey) {
+    const t = $("view").querySelector(`[data-key="${CSS.escape(focusKey)}"]`);
+    if (t) t.scrollIntoView({ block:"center" });
+  }
+}
+function viewSource(rows, groups, focusKey) {
+  groups = withEvidence(groups);
+  if (!groups.length) { $("view").innerHTML = NO_EVIDENCE; return; }
+  $("view").innerHTML = '<div class="viewnote">숨긴 광고가 들어 있는 HTML 코드입니다. 누리집 관리 화면이나 게시판 편집기에서 이 부분을 찾아 지우면 됩니다.</div>' + groups.map((g) => `
+    <div class="card${g.key === focusKey ? " target" : ""}">
+      ${headLine(g)}
+      <pre class="src">${esc(g.ref.outer_html || "(원본을 가져오지 못했습니다)")}</pre>
+    </div>`).join("");
+}
+function viewPage(rows, groups, focusKey) {
+  if (focusKey) {
+    const hit = rows.find((r) => r.evidence_key === focusKey);
+    if (hit) pageTarget = hit;
+  }
+  if (!pageTarget || !rows.includes(pageTarget)) pageTarget = rows[0];
+  const src = `/api/page?u=${encodeURIComponent(pageTarget.url)}&sel=${encodeURIComponent(pageTarget.location)}`;
+  $("view").innerHTML = `
+    <div class="viewnote">점검할 때 저장해 둔 페이지입니다. 광고 위치를 빨간 테두리로 표시했습니다. 아래에서 다른 항목을 고를 수 있습니다.</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:9px">
+      <select id="pagepick" style="flex:1;background:var(--bg);border:1px solid var(--line-2);border-radius:8px;padding:6px 8px">
+        ${groups.map((g) => `<option value="${esc(g.key)}"${g.key === pageTarget.evidence_key ? " selected" : ""}>
+          ${esc(g.ref.url)} — ${esc(g.ref.evidence_text.slice(0, 34))}</option>`).join("")}
+      </select>
+    </div>
+    <iframe class="page" src="${esc(src)}" sandbox="allow-scripts" title="탐지 시점 페이지"></iframe>`;
+  $("pagepick").onchange = (ev) => {
+    const g = groups.find((x) => x.key === ev.target.value);
+    if (g) { pageTarget = g.ref; render(); }
+  };
+}
+
+async function save(f, patch, quiet) {
+  Object.assign(f, patch);
+  await api("/api/review", { method:"POST", headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(Object.assign({ key:f.key }, patch)) });
+  if (!quiet) render();
+}
+
+$("q").addEventListener("input", () => render());
+$("statusf").addEventListener("change", () => render());
+$("csv").addEventListener("click", () => (location.href = "/api/export.csv"));
+$("report").addEventListener("click", () => window.open("/api/report.html", "_blank"));
+$("stop").addEventListener("click", async () => {
+  $("stop").disabled = true;
+  $("stop").textContent = "멈추는 중…";
+  await fetch("/api/stop", { method:"POST", headers:{ "Content-Type":"application/json" }, body:"{}" }).catch(() => {});
+});
+$("quit").addEventListener("click", async () => {
+  if (!confirm("탐지 도구를 종료할까요? 저장된 조치 상태와 결과 파일은 남습니다.")) return;
+  await fetch("/api/quit", { method:"POST" }).catch(() => {});
+  document.body.innerHTML = '<div class="empty"><div class="big">종료되었습니다. 창을 닫아 주세요.</div></div>';
+});
+
+/* ── 탐지 키워드 ── */
+let KW = [];
+async function kwLoad() {
+  // Mock 데이터 (lexicon.py 기반) - API가 없을 때 사용
+  if (!KW || !KW.length) {
+    KW = [
+      {
+        id: "STRONG",
+        name: "확정 표현",
+        desc: "이 말만 있어도 광고로 봅니다",
+        builtin: [
+          { word: "먹튀", on: true }, { word: "안전놀이터", on: true }, { word: "메이저놀이터", on: true }, { word: "사설토토", on: true }, { word: "첫충", on: true },
+          { word: "입플", on: true }, { word: "꽁머니", on: true }, { word: "무료머니", on: true }, { word: "총판모집", on: true }, { word: "가입쿠폰", on: true },
+          { word: "가입코드", on: true }, { word: "라이브카지노", on: true }, { word: "온라인카지노", on: true }, { word: "토토사이트", on: true }, { word: "카지노사이트", on: true },
+          { word: "바카라사이트", on: true }, { word: "슬롯사이트", on: true }, { word: "홀덤사이트", on: true }, { word: "파워볼사이트", on: true }, { word: "bet365", on: true },
+          { word: "megabet", on: true }, { word: "조건만남", on: true }, { word: "출장안마", on: true }, { word: "오피스텔후기", on: true }, { word: "성인라방", on: true },
+          { word: "19라방", on: true }, { word: "섹파", on: true }, { word: "무료야동", on: true }, { word: "국산야동", on: true }, { word: "출장마사지", on: true },
+          { word: "출장샵", on: true }, { word: "출장홈타이", on: true }, { word: "출장오피", on: true }, { word: "onlinecasino", on: true }, { word: "casinosite", on: true },
+          { word: "totosite", on: true }
+        ],
+        added: []
+      },
+      {
+        id: "TOPIC",
+        name: "종목·업종 이름",
+        desc: "다른 단서가 하나 더 있어야 광고로 봅니다",
+        builtin: [
+          { word: "카지노", on: true }, { word: "바카라", on: true }, { word: "슬롯", on: true }, { word: "토토", on: true }, { word: "홀덤", on: true },
+          { word: "에볼루션", on: true }, { word: "배팅", on: true }, { word: "베팅", on: true }, { word: "환전", on: true }, { word: "파친코", on: true },
+          { word: "잭팟", on: true }, { word: "casino", on: true }, { word: "baccarat", on: true }, { word: "slot", on: true }, { word: "toto", on: true },
+          { word: "jackpot", on: true }, { word: "betting", on: true }, { word: "성인용품", on: true }, { word: "야동", on: true }, { word: "음란", on: true },
+          { word: "성인방송", on: true }, { word: "몸캠", on: true }, { word: "벗방", on: true }, { word: "휴게텔", on: true }, { word: "키스방", on: true },
+          { word: "립카페", on: true }, { word: "룸싸롱", on: true }, { word: "풀싸롱", on: true }, { word: "셔츠룸", on: true }, { word: "바다이야기", on: true },
+          { word: "릴게임", on: true }, { word: "오션파라다이스", on: true }, { word: "단폴", on: true }, { word: "성인영상", on: true }
+        ],
+        added: []
+      },
+      {
+        id: "MEDIUM",
+        name: "거래 표현",
+        desc: "판매·연락처가 붙어야 광고로 봅니다",
+        builtin: [
+          { word: "필로폰", on: true }, { word: "대마초", on: true }, { word: "케타민", on: true }, { word: "엑스터시", on: true }, { word: "코카인", on: true },
+          { word: "물뽕", on: true }, { word: "빙두", on: true }, { word: "작대기", on: true }, { word: "아이스작대기", on: true }, { word: "떨액상", on: true },
+          { word: "대마젤리", on: true }, { word: "대포통장", on: true }, { word: "통장매입", on: true }, { word: "통장임대", on: true }, { word: "통장삽니다", on: true },
+          { word: "법인통장", on: true }, { word: "돈세탁", on: true }, { word: "자금세탁", on: true }, { word: "작업대출", on: true }, { word: "내구제", on: true },
+          { word: "무직자대출", on: true }, { word: "당일대출", on: true }, { word: "신불자대출", on: true }, { word: "법인장", on: true }, { word: "개인통장", on: true },
+          { word: "통장판매", on: true }, { word: "통장구매", on: true }, { word: "통장대여", on: true }, { word: "떨액", on: true }, { word: "브액", on: true },
+          { word: "대마액상", on: true }, { word: "떨구매", on: true }, { word: "떨판매", on: true }, { word: "대마판매", on: true }, { word: "대마구매", on: true },
+          { word: "대마구입", on: true }, { word: "대마사는곳", on: true }, { word: "대마파는곳", on: true }, { word: "대마구하는곳", on: true }, { word: "고액알바", on: true },
+          { word: "꿀알바", on: true }, { word: "고수익알바", on: true }, { word: "당일지급알바", on: true }, { word: "재택부업", on: true }, { word: "단기고수익", on: true },
+          { word: "파워볼", on: true }, { word: "접속주소", on: true }, { word: "빠른주소", on: true }, { word: "보증업체", on: true }, { word: "구글검색", on: true },
+          { word: "토토디비", on: true }, { word: "토토db", on: true }, { word: "카지노디비", on: true }, { word: "카지노db", on: true }, { word: "디비팝니다", on: true },
+          { word: "db팝니다", on: true }, { word: "대포폰", on: true }, { word: "대포유심", on: true }, { word: "대포선불폰", on: true }, { word: "달림폰", on: true },
+          { word: "폰테크", on: true }, { word: "휴대폰개통대출", on: true }, { word: "급전대출", on: true }, { word: "개인돈대출", on: true }, { word: "일수대출", on: true },
+          { word: "무서류대출", on: true }, { word: "무방문대출", on: true }, { word: "소액급전", on: true }, { word: "비아그라", on: true }, { word: "시알리스", on: true },
+          { word: "레비트라", on: true }, { word: "카마그라", on: true }, { word: "발기부전치료제", on: true }, { word: "viagra", on: true }, { word: "cialis", on: true },
+          { word: "levitra", on: true }, { word: "미프진", on: true }, { word: "낙태약", on: true }, { word: "흥신소", on: true }, { word: "심부름센터", on: true },
+          { word: "사람찾기", on: true }, { word: "현금화", on: true }, { word: "카드깡", on: true }, { word: "상품권매입", on: true }, { word: "소액결제현금화", on: true },
+          { word: "상품권현금화", on: true }, { word: "신분증위조", on: true }, { word: "위조신분증", on: true }, { word: "면허증위조", on: true }, { word: "졸업증명서위조", on: true },
+          { word: "백링크", on: true }, { word: "구글상위노출", on: true }, { word: "라방", on: true }, { word: "프릴리지", on: true }, { word: "유출영상", on: true },
+          { word: "몰카영상", on: true }, { word: "도촬영상", on: true }, { word: "몰래카메라영상", on: true }, { word: "해외축구중계", on: true }, { word: "epl중계", on: true },
+          { word: "nba중계", on: true }, { word: "mlb중계", on: true }
+        ],
+        added: []
+      },
+      {
+        id: "WEAK",
+        name: "약한 신호",
+        desc: "둘 이상 겹칠 때 광고로 보는 표현",
+        builtin: [
+          { word: "텔레그램", on: true }, { word: "상담", on: true }, { word: "지급", on: true }, { word: "쿠폰", on: true }, { word: "코드", on: true },
+          { word: "추천", on: true }, { word: "순위표", on: true }, { word: "바로가기", on: true }, { word: "가입", on: true }, { word: "체험", on: true },
+          { word: "이벤트", on: true }, { word: "검증", on: true }, { word: "주소", on: true }, { word: "총판", on: true }, { word: "모집", on: true },
+          { word: "보너스", on: true }, { word: "놀이터", on: true }, { word: "업체", on: true }, { word: "순위", on: true }, { word: "문의", on: true },
+          { word: "입금", on: true }, { word: "출금", on: true }, { word: "머니", on: true }, { word: "충전", on: true }, { word: "telegram", on: true },
+          { word: "vip", on: true }, { word: "promo", on: true }, { word: "event", on: true }, { word: "free", on: true }, { word: "팝니다", on: true },
+          { word: "삽니다", on: true }, { word: "매입", on: true }, { word: "직거래", on: true }, { word: "던지기", on: true }, { word: "비대면", on: true },
+          { word: "당일", on: true }, { word: "고수익", on: true }, { word: "선입금", on: true }, { word: "즉시", on: true }, { word: "해드립니다", on: true },
+          { word: "대행", on: true }, { word: "비밀배송", on: true }, { word: "무삭제", on: true }, { word: "무직자", on: true }, { word: "신불자", on: true },
+          { word: "판매", on: true }, { word: "구매", on: true }, { word: "구입", on: true }, { word: "대여", on: true }, { word: "파는곳", on: true },
+          { word: "사는곳", on: true }, { word: "구하는곳", on: true }, { word: "구입방법", on: true }, { word: "구매방법", on: true }, { word: "무료", on: true },
+          { word: "실시간", on: true }, { word: "중계", on: true }, { word: "티비", on: true }, { word: "스포츠중계", on: true }, { word: "무료중계", on: true },
+          { word: "롤링", on: true }, { word: "수익보장", on: true }, { word: "원금보장", on: true }, { word: "리딩방", on: true }, { word: "가입금", on: true }
+        ],
+        added: []
+      },
+      {
+        id: "CAUTION",
+        name: "예방·주의 표현",
+        desc: "광고에서는 거의 안 나오는 말",
+        builtin: [
+          { word: "신고", on: true }, { word: "처벌", on: true }, { word: "예방", on: true }, { word: "주의", on: true }, { word: "피해", on: true },
+          { word: "사기", on: true }, { word: "금지", on: true }, { word: "범죄", on: true }, { word: "단속", on: true }, { word: "근절", on: true },
+          { word: "캠페인", on: true }, { word: "교육", on: true }, { word: "상담센터", on: true }, { word: "경찰", on: true }, { word: "불법", on: true },
+          { word: "도박문제", on: true }, { word: "중독", on: true }, { word: "속지", on: true }, { word: "광고문구", on: true }, { word: "적발", on: true },
+          { word: "검거", on: true }, { word: "기소", on: true }, { word: "구속", on: true }, { word: "덜미", on: true }, { word: "실태", on: true },
+          { word: "유혹", on: true }, { word: "미끼", on: true }, { word: "주의보", on: true }, { word: "수사", on: true }, { word: "송치", on: true },
+          { word: "혐의", on: true }
+        ],
+        added: []
+      }
+    ];
+  }
+
+  // 기존 API 시도 (서버가 있으면 최신 데이터 로드)
+  try {
+    const response = await api("/api/keywords");
+    if (response && response.categories) {
+      KW = response.categories;
+    }
+  } catch (e) {
+    // API 실패해도 Mock 데이터로 계속 진행
+  }
+
+  $("kwcatsel").innerHTML = KW.map((c) => `<option value="${c.id}">${esc(c.name)}</option>`).join("");
+  kwRender();
+}
+function kwRender() {
+  const q = $("kwfind").value.trim().toLowerCase();
+  const openIds = new Set([...document.querySelectorAll("#kwcats details[open]")].map((d) => d.dataset.id));
+  $("kwcats").innerHTML = KW.map((c) => {
+    const user = c.added.filter((w) => !q || w.includes(q));
+    const base = c.builtin.filter((b) => !q || b.word.includes(q));
+    const offN = c.builtin.filter((b) => !b.on).length;
+    const open = q ? (user.length || base.length) : openIds.has(c.id);
+    return `<details class="kwcat" data-id="${c.id}"${open ? " open" : ""}>
+      <summary>${esc(c.name)} <small>기본 ${c.builtin.length - offN}개${offN ? ` (꺼 둠 ${offN})` : ""}${c.added.length ? ` · 직접 더함 ${c.added.length}개` : ""}</small></summary>
+      <p class="desc">${esc(c.desc)}</p>
+      <div class="kwlist">
+        ${user.map((w) => `<button class="kw user" data-act="remove" data-cat="${c.id}" data-w="${esc(w)}" title="눌러서 지웁니다">${esc(w)} <i>✕</i></button>`).join("")}
+        ${base.map((b) => `<button class="kw${b.on ? "" : " off"}" data-act="toggle" data-on="${b.on ? "" : "1"}" data-cat="${c.id}" data-w="${esc(b.word)}" title="${b.on ? "눌러서 끕니다" : "눌러서 다시 켭니다"}">${esc(b.word)}</button>`).join("")}
+        ${!user.length && !base.length ? '<span class="kwmsg">찾는 단어가 없습니다.</span>' : ""}
+      </div></details>`;
+  }).join("");
+}
+async function kwEdit(body, outId) {
+  try {
+    // Mock 데이터에서 직접 처리 (서버 없을 때)
+    if (body.action === "toggle") {
+      const cat = KW.find((c) => c.id === body.cat);
+      if (cat) {
+        const w = cat.builtin.find((b) => b.word === body.word);
+        if (w) {
+          w.on = !w.on;
+          kwRender();
+          return { categories: KW };
+        }
+      }
+    } else if (body.action === "remove") {
+      const cat = KW.find((c) => c.id === body.cat);
+      if (cat) {
+        cat.added = cat.added.filter((w) => w !== body.word);
+        kwRender();
+        return { categories: KW };
+      }
+    } else if (body.action === "add") {
+      const cat = KW.find((c) => c.id === body.cat);
+      if (cat && !cat.added.includes(body.word) && !cat.builtin.find((b) => b.word === body.word)) {
+        cat.added.push(body.word);
+        kwRender();
+        return { categories: KW, word: body.word };
+      }
+    } else if (body.action === "reset") {
+      KW.forEach((cat) => {
+        cat.added = [];
+        cat.builtin.forEach((b) => { b.on = true; });
+      });
+      kwRender();
+      return { categories: KW };
+    }
+
+    // API 시도 (서버가 있으면)
+    const r = await api("/api/keywords", { method:"POST", headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(body) });
+    KW = r.categories;
+    kwRender();
+    return r;
+  } catch (e) {
+    const out = $(outId || "kwaddout"); out.textContent = e.message; out.className = "kwmsg bad";
+    return null;
+  }
+}
+$("kwbtn").addEventListener("click", async () => { await kwLoad(); $("kwdlg").showModal(); });
+$("kwclose").addEventListener("click", () => $("kwdlg").close());
+$("kwfind").addEventListener("input", kwRender);
+$("kwcats").addEventListener("click", (ev) => {
+  const b = ev.target.closest("button.kw");
+  if (!b) return;
+  kwEdit({ action:b.dataset.act, cat:b.dataset.cat, word:b.dataset.w, on:!!b.dataset.on });
+});
+$("kwadd").addEventListener("click", async () => {
+  const word = $("kwword").value.trim(), cat = $("kwcatsel").value;
+  if (!word) return;
+  const r = await kwEdit({ action:"add", cat, word });
+  if (r) {
+    const name = KW.find((c) => c.id === cat).name;
+    $("kwaddout").textContent = `'${r.word}'을(를) '${name}'에 더했습니다. 다음 탐지부터 적용됩니다.`;
+    $("kwaddout").className = "kwmsg";
+    $("kwword").value = "";
+    const d = document.querySelector(`#kwcats details[data-id="${cat}"]`); if (d) d.open = true;
+  }
+});
+$("kwword").addEventListener("keydown", (ev) => { if (ev.key === "Enter") $("kwadd").click(); });
+$("kwreset").addEventListener("click", async () => {
+  if (!confirm("직접 더한 단어를 모두 지우고 꺼 둔 기본 단어를 모두 켤까요?")) return;
+  if (await kwEdit({ action:"reset" }, "kwaddout")) {
+    $("kwaddout").textContent = "기본값으로 되돌렸습니다."; $("kwaddout").className = "kwmsg";
+  }
+});
+$("kwtestgo").addEventListener("click", async () => {
+  const text = $("kwtest").value.trim();
+  if (!text) return;
+  const r = await api("/api/keywords/test", { method:"POST", headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ text }) });
+  const verdict = (v) => v ? '<b class="ad">광고</b>' : "정상";
+  const tricks = [r.homoglyph && "닮은꼴 글자", r.jamo && "자모 분해"].filter(Boolean).join("·");
+  $("kwtestout").className = "kwmsg";
+  $("kwtestout").innerHTML = `숨겨진 글이면 ${verdict(r.hidden)} · 화면에 그대로 보이는 글이면 ${verdict(r.visible)}`
+    + `<br>걸린 표현·단서: ${r.evidence.length ? r.evidence.map((k) => `<code>${esc(k)}</code>`).join(" ") : "없음"}`
+    + (tricks ? ` · 문자 위장: ${tricks}` : "")
+    + `<br>복원한 글자: <code>${esc(r.normalized)}</code>`;
+});
+$("kwtest").addEventListener("keydown", (ev) => { if (ev.key === "Enter") $("kwtestgo").click(); });
+
+$("help").addEventListener("click", showGuide);
+$("guideclose").addEventListener("click", () => $("guide").close());
+$("guide").addEventListener("click", (ev) => { if (ev.target === $("guide")) $("guide").close(); });
+
+// 새로고침해도 하던 단계로 돌아온다 (탐지 중이면 진행 화면, 끝났으면 결과)
+(async () => {
+  setStage("start");
+  try {
+    const s = await api("/api/status");
+    if (s.running) startRunning("");
+    else if (s.has_result) await load(!sessionStorage.getItem("hwonhi-viewed"));
+    sessionStorage.setItem("hwonhi-viewed", "1");
+  } catch (e) { /* 서버가 아직 준비되지 않았으면 시작 화면 그대로 */ }
+})();
+
+const ping = () => fetch("/api/ping").catch(() => {});
+ping(); setInterval(ping, 5000);
+// 창을 닫으면 프로그램도 바로 끝나도록 알린다 (새로고침이면 곧 ping 이 다시 가서 취소된다)
+window.addEventListener("pagehide", () => navigator.sendBeacon("/api/bye"));
+
+// 다크모드
+(()=>{
+  const btn = document.getElementById("darkmode");
+  const isDark = localStorage.getItem("hwonhi-darkmode") === "true";
+  if(isDark) document.documentElement.classList.add("dark-mode");
+  btn.textContent = isDark ? "☀️" : "🌙";
+  btn.addEventListener("click", ()=>{
+    const next = !document.documentElement.classList.contains("dark-mode");
+    document.documentElement.classList.toggle("dark-mode", next);
+    localStorage.setItem("hwonhi-darkmode", next);
+    btn.textContent = next ? "☀️" : "🌙";
+  });
+})();
+
+// 온보딩
+(()=>{
+  const onboardModal = $("onboard");
+  const onboardStart = $("onboardstart");
+  const onboardClose = $("onboardclose");
+  const quickstartBtn = $("quickstart");
+
+  // 빠른 시작 가이드 버튼을 눌렀을 때만 연다 (들어오자마자 띄우지 않는다)
+  quickstartBtn.addEventListener("click", () => {
+    onboardModal.showModal();
+  });
+
+  onboardStart.addEventListener("click", () => {
+    onboardModal.close();
+  });
+
+  onboardClose.addEventListener("click", () => {
+    onboardModal.close();
+  });
+
+  onboardModal.addEventListener("click", (ev) => {
+    if(ev.target === onboardModal) onboardModal.close();
+  });
+})();
+
+// 앱 시작 화면
+(()=>{
+  const splash = $("splash"), app = $("app");
+  if (splash.hidden) return;          // 같은 창에서 이미 [시작하기]를 눌렀다 (새로고침)
+  app.inert = true;                   // 시작 화면 뒤의 단추가 Tab 으로 잡히지 않게
+
+  // 배경 글: 평범한 누리집 문구 사이에 광고 문구를 섞는다. 두 겹이 같은 글이어야 하므로 한 번 만들어 복사한다.
+  const NORMAL = ["공지사항", "2026년 하반기 채용 공고", "민원 서식 내려받기", "주민참여예산 설명회 안내",
+    "정보공개 청구 안내", "입찰 공고", "보도자료", "행사 일정", "자주 묻는 질문", "찾아오시는 길",
+    "고시·공고", "예산 집행 현황", "조직도", "민원 처리 결과 조회", "자료실", "설문 조사 참여",
+    "개인정보 처리방침", "시설 대관 신청", "교육 프로그램 접수", "담당 부서 안내"];
+  const ADS = ["먹튀 없는 안전놀이터", "ㅋㅏㅈㅣ노 가입 즉시 지급", "с𝚊sino 추천 코드", "밤문화 예약 문의",
+    "첫충 30% 이벤트", "ㅌㅗㅌㅗ 분석 무료"];
+  let seed = 20261013;
+  const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+  const base = $("splashbase");
+  for (let r = 0; r < 60; r++) {
+    const row = document.createElement("span");
+    row.className = "row";
+    row.style.marginLeft = `-${Math.floor(rnd() * 160)}px`;
+    for (let i = 0; i < 30; i++) {
+      const s = document.createElement("span");
+      if (rnd() < 0.13) { s.className = "ad"; s.textContent = ADS[Math.floor(rnd() * ADS.length)]; }
+      else s.textContent = NORMAL[Math.floor(rnd() * NORMAL.length)];
+      row.appendChild(s);
+    }
+    base.appendChild(row);
+  }
+  $("splashlit").innerHTML = base.innerHTML;
+
+  // 불빛: 마우스를 따라가고, 가만히 두면 천천히 화면을 훑는다
+  let lastMove = 0, raf = 0;
+  const onMove = (e) => {
+    lastMove = performance.now();
+    splash.style.setProperty("--x", e.clientX + "px");
+    splash.style.setProperty("--y", e.clientY + "px");
+  };
+  splash.addEventListener("pointermove", onMove);
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const drift = (t) => {
+    if (t - lastMove > 2500) {
+      splash.style.setProperty("--x", (50 + 34 * Math.sin(t / 2600)) + "%");
+      splash.style.setProperty("--y", (46 + 32 * Math.sin(t / 1900 + 1)) + "%");
+    }
+    raf = requestAnimationFrame(drift);
+  };
+  if (!still) raf = requestAnimationFrame(drift);
+
+  const onKey = (e) => { if (e.key === "Enter") enter(); };
+  function enter() {
+    cancelAnimationFrame(raf);
+    document.removeEventListener("keydown", onKey);
+    try { sessionStorage.setItem("hwonhi-splash-done", "1"); } catch (e) {}
+    app.inert = false;
+    const done = () => { splash.hidden = true; $("url").focus(); };
+    if (still) return done();
+    splash.classList.add("leaving");
+    setTimeout(done, 220);
+  }
+  $("splashgo").addEventListener("click", enter);
+  document.addEventListener("keydown", onKey);
+})();
+</script>
+</body>
+</html>

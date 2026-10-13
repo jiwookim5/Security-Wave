@@ -1,0 +1,10 @@
+{
+  "/late/list|": "pages/list.html",
+  "/late/view|1": "pages/view_1.html",
+  "/late/view|2": "pages/view_2.html",
+  "/late/view|3": "pages/view_3.html",
+  "/late/view|4": "pages/view_4.html",
+  "/late/view|5": "pages/view_5.html",
+  "/late/view|6": "pages/view_6.html",
+  "/late/widget|": "pages/widget.html"
+}

@@ -1,0 +1,12 @@
+{
+  "base": "http://127.0.0.1:8786",
+  "entry_url": "http://127.0.0.1:8786/late/list",
+  "note": "지연 삽입 시험. 광고가 페이지를 연 뒤에 들어온다: 1번 본문 스크립트 setTimeout 0.7초, 2번 load 처리기 안 setTimeout 30ms, 3번 DOMContentLoaded 처리기, 4번 window.onload, 6번 iframe 안 setTimeout 1.2초. 5번은 1초마다 다시 거는 슬라이드 타이머가 있는 정상 페이지로, 검출이 없어야 하고 대기가 끝없이 길어지면 안 된다.",
+  "answers": [
+    {"url": "/late/view?id=1", "location": "div.post > span.late-ad", "technique": "TRANSPARENT"},
+    {"url": "/late/view?id=2", "location": "div.post > span.load-ad", "technique": "OFFSCREEN"},
+    {"url": "/late/view?id=3", "location": "div.post > span.dcl-ad", "technique": "TRANSPARENT"},
+    {"url": "/late/view?id=4", "location": "div.post > span.onload-ad", "technique": "OFFSCREEN"},
+    {"url": "/late/view?id=6", "location": "iframe[src=\"http://127.0.0.1:8786/late/widget\"] >>> p.w > span.fr-ad", "technique": "TRANSPARENT"}
+  ]
+}

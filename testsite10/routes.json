@@ -1,0 +1,18 @@
+{
+  "/visit/list|": "pages/list.html",
+  "/visit/view|1": "pages/view_1.html",
+  "/visit/view|2": "pages/view_2.html",
+  "/visit/view|3": "pages/view_3.html",
+  "/visit/view|4": "pages/view_4.html",
+  "/visit/view|5": "pages/view_5.html",
+  "/visit/view|6": "pages/view_6.html",
+  "/visit/view|7": "pages/view_7.html",
+  "/visit/view|8": "pages/view_8.html",
+  "/visit/view|9": "pages/view_9.html",
+  "/visit/view|10": "pages/view_10.html",
+  "/visit/view|11": "pages/view_11.html",
+  "/visit/view|12": "pages/view_12.html",
+  "/visit/view|13": "pages/view_13.html",
+  "/visit/view|14": "pages/view_14.html",
+  "/visit/view|15": "pages/view_15.html"
+}

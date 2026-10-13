@@ -1,0 +1,61 @@
+{
+  "base": "http://127.0.0.1:8777",
+  "entry_url": "http://127.0.0.1:8777/site/main",
+  "note": "견고성 시험. (1) 1번 글의 같은 src iframe 두 개가 서로 다른 부모 안에 있어 순번 선택자로는 가리킬 수 없다. (2) /go/notice 와 /site/old?id=2 는 1번·2번 글로 넘겨지므로 같은 글을 두 번 보고하면 안 된다. (3) 첫 화면의 숨김 모바일 메뉴(약한 말만 11개)와 전각 괄호·물결표가 섞인 신고 안내문, 배경 그림 위 흰 글씨 배너는 주요 4종으로 보고하면 안 된다 (배너는 보이는 광고로 result_extra 에 나온다). (4) 2번 글의 발기부전 치료제 광고는 잡고 같은 글의 단속 안내문은 잡지 않는다. (5) 3번 글 댓글은 화면을 내려야, 4번 글 댓글은 '댓글 더보기'를 눌러야 불러온다. (6) 5번 글 댓글은 '댓글 더보기'가 비동기 POST(selectCmtList.do)로 불러온다. 조회로 보이는 이 POST 는 보내도 되지만, 같은 글의 '답글 더보기'는 삭제 요청(deleteCmt.do)이므로 서버에 닿으면 안 된다.",
+  "answers": [
+    {
+      "url": "/site/view?id=1",
+      "location": "div.cont > p.memo",
+      "technique": "TRANSPARENT",
+      "note": "흰 바탕 흰 글씨"
+    },
+    {
+      "url": "/site/view?id=1",
+      "location": "div.box-a > iframe >>> p.w > span",
+      "technique": "OFFSCREEN",
+      "note": "같은 src iframe 1 (부모가 다름)"
+    },
+    {
+      "url": "/site/view?id=1",
+      "location": "div.box-b > iframe >>> p.w > span",
+      "technique": "OFFSCREEN",
+      "note": "같은 src iframe 2"
+    },
+    {
+      "url": "/site/view?id=2",
+      "location": "div.cmt > p.c",
+      "technique": "OFFSCREEN",
+      "note": "발기부전 치료제 판매"
+    },
+    {
+      "url": "/site/view?id=3",
+      "location": "ul.cmt-list > li:nth-of-type(2) > span",
+      "technique": "OFFSCREEN",
+      "note": "스크롤해야 불러오는 댓글, font-size:0"
+    },
+    {
+      "url": "/site/view?id=4",
+      "location": "ul.cmt-list > li:nth-of-type(3) > span",
+      "technique": "TRANSPARENT",
+      "note": "더보기를 눌러야 나오는 댓글, opacity:0"
+    },
+    {
+      "url": "/site/view?id=5",
+      "location": "ul.cmt-list > li:nth-of-type(3) > span",
+      "technique": "TRANSPARENT",
+      "note": "'댓글 더보기'가 POST(selectCmtList.do)로 불러오는 댓글, 흰 바탕 흰 글씨"
+    }
+  ],
+  "extra_answers": [
+    {
+      "url": "/site/main",
+      "location": "div.banner > p.banner-txt",
+      "extra_finding": "VISIBLE_AD",
+      "note": "배경 그림 위 흰 글씨 (보이는 광고)"
+    }
+  ],
+  "allowed_posts": [
+    "/site/selectCmtList.do"
+  ],
+  "note_iframe_page": "/site/widget 은 view?id=1 에 iframe 으로 두 번 들어가고 메인 메뉴에서도 직접 링크된다. 광고는 부모 페이지 주소 + iframe 위치로만 적고 위젯 주소로는 적지 않는다 (요강 작성 예시 f_004·CleanGov 정답표와 같은 관례)."
+}

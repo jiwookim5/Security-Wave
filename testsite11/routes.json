@@ -1,0 +1,7 @@
+{
+  "/main|": "pages/main.html",
+  "/board/view|1": "pages/view_1.html",
+  "/board/view|2": "pages/view_2.html",
+  "/bbs/view|3": "pages/view_3.html",
+  "/other/view|4": "pages/view_4.html"
+}

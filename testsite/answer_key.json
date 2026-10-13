@@ -1,0 +1,34 @@
+{
+  "base": "http://127.0.0.1:8765",
+  "entry_url": "http://127.0.0.1:8765/board/list",
+  "answers": [
+    {"url": "/board/list", "location": "table.board-list > tbody > tr:nth-of-type(3) > td.title > a", "technique": "HOMOGLYPH", "note": "전각 라틴 ｍｅｇａ－ＢＥＴ"},
+    {"url": "/board/list", "location": "div.notice-board > span.visually-hidden", "technique": "JAMO", "note": "ㅋㅏㅈㅣㄴㅗ"},
+    {"url": "/board/list", "location": "div.notice-board > span.visually-hidden", "technique": "OFFSCREEN", "note": "left:-10000px 중첩"},
+
+    {"url": "/board/view?id=1024", "location": "h2.post-title", "technique": "HOMOGLYPH", "note": "제목 전각"},
+    {"url": "/board/view?id=1024", "location": "p.ghost-text", "technique": "TRANSPARENT", "note": "color:transparent"},
+    {"url": "/board/view?id=1024", "location": "div.tiny-font", "technique": "OFFSCREEN", "note": "font-size:0"},
+    {"url": "/board/view?id=1024", "location": "span.zero-op", "technique": "TRANSPARENT", "note": "opacity:0"},
+    {"url": "/board/view?id=1024", "location": "span.zero-op", "technique": "JAMO", "note": "자모 중첩"},
+    {"url": "/board/view?id=1024", "location": "ul.comment-list > li:nth-of-type(2) > span.body", "technique": "OFFSCREEN", "note": "off-left"},
+    {"url": "/board/view?id=1024", "location": "ul.comment-list > li:nth-of-type(2) > span.body", "technique": "HOMOGLYPH", "note": "키릴 роуаl"},
+
+    {"url": "/board/view?id=1180", "location": "p.desc > span.bg-match", "technique": "TRANSPARENT", "note": "배경색 동일"},
+    {"url": "/board/view?id=1180", "location": "ul.comment-list > li:nth-of-type(2) > span.body", "technique": "TRANSPARENT", "note": "opacity:0"},
+    {"url": "/board/view?id=1180", "location": "ul.comment-list > li:nth-of-type(2) > span.body", "technique": "JAMO", "note": "자모 중첩"},
+    {"url": "/board/view?id=1180", "location": "iframe[src=\"http://127.0.0.1:8765/widget/notice\"] >>> div.widget-body > span.hidden-link", "technique": "OFFSCREEN", "note": "iframe 내부"},
+
+    {"url": "/board/view?id=1301", "location": "div.none-disp", "technique": "OFFSCREEN", "note": "display:none"},
+    {"url": "/board/view?id=1301", "location": "p.desc > span.off-left", "technique": "OFFSCREEN", "note": "left:-9999px + font-size:0"},
+    {"url": "/board/view?id=1301", "location": "p.desc > span.off-left", "technique": "HOMOGLYPH", "note": "전각 ＴＯＴＯ"}
+  ],
+  "traps": [
+    {"url": "/board/list", "location": "a.sr-only", "why": "정상 스킵내비게이션"},
+    {"url": "/board/list", "location": "ul.submenu", "why": "정상 드롭다운 메뉴 display:none"},
+    {"url": "/board/list", "location": "p.paging > span.sr-only", "why": "정상 페이지 안내"},
+    {"url": "/board/view?id=1024", "location": "ul.comment-list > li:nth-of-type(1) > span.body", "why": "ㅋㅋㅋ 자모지만 광고 아님, 가시 상태"},
+    {"url": "/board/view?id=1301", "location": "p.notice-legal", "why": "사행산업 언급하나 정상 정책문구"},
+    {"url": "/board/view?id=1009", "location": "span.visually-hidden", "why": "정상 표 요약 스크린리더 텍스트"}
+  ]
+}

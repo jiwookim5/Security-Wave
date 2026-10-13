@@ -1,0 +1,14 @@
+{
+  "/bbs/list|": "pages/list.html",
+  "/bbs/view|1": "pages/view_1.html",
+  "/bbs/view|2": "pages/view_2.html",
+  "/cmm/fms/FileDown.do|F002": "files/form.hwp",
+  "/cmm/fms/FileDown.do|F101": "files/plan.hwp",
+  "/bbs/view|3": "pages/view_3.html",
+  "/cmm/fms/FileDown.do|F201": "files/report.hwpx",
+  "/cmm/fms/FileDown.do|F202": "files/apply.pdf",
+  "/cmm/fms/FileDown.do|F203": "files/plan.hwp",
+  "/bbs/view|4": "pages/view_4.html",
+  "/bbs/view|5": "pages/view_5.html",
+  "/bbs/view|6": "pages/view_6.html"
+}

@@ -1,0 +1,41 @@
+{
+  "_comment": "BASE 는 채점 시 테스트 사이트 주소로 치환됨. location 은 문자열이 아니라 가리키는 요소로 비교한다.",
+  "answers": [
+    {"url": "BASE/board/list", "location": "table.board-list > tbody > tr:nth-of-type(4) > td.title > a", "technique": "HOMOGLYPH"},
+
+    {"url": "BASE/board/view?id=1024", "location": "div.notice-board > span.visually-hidden", "technique": "JAMO"},
+
+    {"url": "BASE/board/view?id=1180", "location": "div.article-body > p.desc > span", "technique": "TRANSPARENT"},
+    {"url": "BASE/board/view?id=1180", "location": "iframe[src=\"BASE/widget/notice\"] >>> span.hidden-link", "technique": "OFFSCREEN"},
+
+    {"url": "BASE/board/view?id=1201", "location": "div.article-body > p.ghost:nth-of-type(2)", "technique": "TRANSPARENT"},
+    {"url": "BASE/board/view?id=1201", "location": "div.card > span.same", "technique": "TRANSPARENT"},
+    {"url": "BASE/board/view?id=1201", "location": "div.article-body > div:nth-of-type(2) > p", "technique": "OFFSCREEN"},
+    {"url": "BASE/board/view?id=1201", "location": "span.tiny", "technique": "OFFSCREEN"},
+    {"url": "BASE/board/view?id=1201", "location": "p.fade", "technique": "TRANSPARENT"},
+    {"url": "BASE/board/view?id=1201", "location": "div.article-body > p:nth-of-type(4)", "technique": "HOMOGLYPH"},
+    {"url": "BASE/board/view?id=1201", "location": "div.article-body > p.ghost:nth-of-type(5)", "technique": "HOMOGLYPH"},
+    {"url": "BASE/board/view?id=1201", "location": "div.article-body > p.ghost:nth-of-type(5)", "technique": "TRANSPARENT"},
+    {"url": "BASE/board/view?id=1201", "location": "div.comments > div.comment:nth-of-type(2) > p", "technique": "JAMO"},
+
+    {"url": "BASE/board/view?id=1202", "location": "iframe[src=\"BASE/widget/outer\"] >>> iframe[src=\"BASE/widget/inner\"] >>> div.inner > em", "technique": "OFFSCREEN"},
+
+    {"_why": "반대 문맥(신고)이 있어도 텔레그램 연락처가 있으면 광고", "url": "BASE/policy/campaign", "location": "p.ghost", "technique": "TRANSPARENT"},
+    {"_why": "전각 ％ 한 글자만으로 HOMOGLYPH 를 추가하면 안 됨", "url": "BASE/contact", "location": "p.ghost", "technique": "TRANSPARENT"},
+
+    {"_why": "javascript:fn_view('2001') — 클릭해야 URL 을 알 수 있음", "url": "BASE/egov/view?nttId=2001", "location": "div.hide-box > p", "technique": "OFFSCREEN"},
+    {"_why": "href=# onclick=fn_view(2002)", "url": "BASE/egov/view?nttId=2002", "location": "p.w", "technique": "TRANSPARENT"},
+    {"_why": "tr onclick 속성 안의 URL 문자열", "url": "BASE/egov/view?nttId=2003", "location": "span.t", "technique": "OFFSCREEN"},
+    {"_why": "fn_link_page(2) GET 폼 전송으로만 가는 2페이지", "url": "BASE/egov/view?nttId=2004", "location": "p.reply", "technique": "JAMO"}
+  ],
+  "_extra_comment": "result_extra.json 정답 (technique 은 ETC, 아래 extra_finding 으로 비교). 같은 페이지의 정상 반례(zw-ok, gen-ok, lowc-ok, seo-img-ok, title-ok)는 보고되면 오탐.",
+  "extra_answers": [
+    {"_why": "sr-only/visually-hidden 의 clip 은 4종이 아님", "url": "BASE/board/view?id=1024", "location": "div.notice-board > span.visually-hidden", "extra_finding": "CLIP_HIDDEN"},
+    {"_why": "단어 안쪽 제로폭 문자", "url": "BASE/notice/seo", "location": "p.zw", "extra_finding": "ZERO_WIDTH_OBFUSCATION"},
+    {"_why": "::after content (CSS 16진 이스케이프로 한글 표기)", "url": "BASE/notice/seo", "location": "span.gen-ad", "extra_finding": "CSS_GENERATED_CONTENT"},
+    {"_why": "#f2f2f2 on #fff — 채널 차이 13 이라 TRANSPARENT 아님, 대비 1.1", "url": "BASE/notice/seo", "location": "p.lowc", "extra_finding": "LOW_CONTRAST"},
+    {"_why": "opacity 0.12 — TRANSPARENT 기준(0.05) 초과, 합성 대비 1.3", "url": "BASE/notice/seo", "location": "p.dim", "extra_finding": "LOW_CONTRAST"},
+    {"_why": "img alt 에만 있는 광고", "url": "BASE/notice/seo", "location": "img.seo-img", "extra_finding": "ATTRIBUTE_HIDDEN"},
+    {"_why": "a title 에만 있는 광고", "url": "BASE/notice/seo", "location": "a.title-ad", "extra_finding": "ATTRIBUTE_HIDDEN"}
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "/main|": "pages/main.html",
+  "/search/total.do|": {
+    "page": "pages/search_total.html",
+    "reflect": "kwd"
+  },
+  "/board/list|": {
+    "page": "pages/board_list.html",
+    "reflect": "searchWrd"
+  },
+  "/news/list|": "pages/news_list.html",
+  "/news/search.do|": {
+    "page": "pages/news_search.html",
+    "reflect": "query"
+  },
+  "/lib/main|": "pages/lib_main.html",
+  "/lib/search|": {
+    "page": "pages/lib_search.html",
+    "reflect": "keyword",
+    "headers": {
+      "X-Robots-Tag": "noindex"
+    }
+  },
+  "/guide/faq|": "pages/guide_faq.html",
+  "/faq/search|": {
+    "page": "pages/faq_search.html",
+    "reflect": "q"
+  },
+  "/event/list|": "pages/event_list.html",
+  "/event/search|": {
+    "page": "pages/event_search.html",
+    "reflect": "srchText"
+  },
+  "/mw/main|": "pages/mw_main.html",
+  "/mw/search|": {
+    "page": "pages/mw_search.html",
+    "reflect": "q",
+    "method": "POST"
+  },
+  "/minwon/list|": "pages/minwon_list.html",
+  "/minwon/search|": {
+    "page": "pages/minwon_search.html"
+  },
+  "/cms/searchResult.do|": {
+    "page": "pages/cms_search.html",
+    "reflect": "keyword"
+  },
+  "/old/search.jsp|": {
+    "page": "pages/old_search.html",
+    "reflect": "searchKeyword"
+  }
+}

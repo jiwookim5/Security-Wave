@@ -1,0 +1,6 @@
+{
+  "/free/list|": "pages/list.html",
+  "/free/view|1": "pages/view_1.html",
+  "/free/view|2": "pages/view_2.html",
+  "/free/view|3": "pages/view_3.html"
+}

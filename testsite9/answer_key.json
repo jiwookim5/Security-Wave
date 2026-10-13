@@ -1,0 +1,71 @@
+{
+  "base": "http://127.0.0.1:8773",
+  "entry_url": "http://127.0.0.1:8773/free/list",
+  "note": "사전 확장 시험: 마약·대포통장·돈세탁·불법대출·불법알바 광고(숨김). 3번 글은 숨겨진 경고성 정상 문구만 있어 보고하면 안 된다.",
+  "answers": [
+    {
+      "url": "/free/view?no=1",
+      "location": "p.d1",
+      "technique": "OFFSCREEN",
+      "note": "마약: 필로폰·작대기·던지기 + 연락처"
+    },
+    {
+      "url": "/free/view?no=1",
+      "location": "p.d2",
+      "technique": "TRANSPARENT",
+      "note": "마약: 케타민·엑스터시 + t.me 주소(정규화 전 원문에서 신호)"
+    },
+    {
+      "url": "/free/view?no=1",
+      "location": "p.m1",
+      "technique": "OFFSCREEN",
+      "note": "대포통장·법인통장 매입"
+    },
+    {
+      "url": "/free/view?no=1",
+      "location": "p.m2",
+      "technique": "OFFSCREEN",
+      "note": "돈세탁 대행 + 5% + 연락처"
+    },
+    {
+      "url": "/free/view?no=2",
+      "location": "p.l1",
+      "technique": "TRANSPARENT",
+      "note": "작업대출·내구제 + 전화번호"
+    },
+    {
+      "url": "/free/view?no=2",
+      "location": "p.j1",
+      "technique": "OFFSCREEN",
+      "note": "고액알바 당일지급 + 연락처"
+    },
+    {
+      "url": "/free/view?no=2",
+      "location": "p.j2",
+      "technique": "TRANSPARENT",
+      "note": "재택부업·고수익알바 + 카톡"
+    }
+  ],
+  "traps": [
+    {
+      "url": "/free/view?no=3",
+      "location": "p.sr-only",
+      "why": "숨겨진 신고 안내(대포통장 매입 제의 신고)"
+    },
+    {
+      "url": "/free/view?no=3",
+      "location": "p.faq-a",
+      "why": "닫힌 FAQ 속 사기 주의 문구"
+    },
+    {
+      "url": "/free/view?no=3",
+      "location": "span.tip",
+      "why": "숨겨진 피해 상담 안내"
+    },
+    {
+      "url": "/free/view?no=3",
+      "location": "p.note",
+      "why": "숨겨진 자금세탁방지 교육 안내"
+    }
+  ]
+}

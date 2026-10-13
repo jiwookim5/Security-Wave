@@ -1,0 +1,9 @@
+{
+  "/egov/list.do|": "pages/list.html",
+  "/egov/list.do|2": "pages/list_2.html",
+  "/egov/menu.do|": "pages/menu.html",
+  "/egov/view.do|11": "pages/view_11.html",
+  "/egov/view.do|21": "pages/view_21.html",
+  "/egov/view.do|31": "pages/view_31.html",
+  "/egov/view.do|41": "pages/view_41.html"
+}

@@ -1,0 +1,55 @@
+{
+  "base": "http://127.0.0.1:8772",
+  "entry_url": "http://127.0.0.1:8772/egov/main.do",
+  "note": "전자정부 게시판식 자바스크립트 이동 탐색 시험. 게시글마다 숨긴 광고 1건. 삭제 링크(fn_delete)는 눌리면 안 된다: 시험 뒤 testsite8/_posted.log 가 없어야 한다.",
+  "answers": [
+    {
+      "url": "/bbs/view.do?nttId=1001",
+      "location": "p.h1001",
+      "technique": "OFFSCREEN",
+      "note": "href=javascript:fn_view()"
+    },
+    {
+      "url": "/bbs/view.do?nttId=1002",
+      "location": "p.h1002",
+      "technique": "TRANSPARENT",
+      "note": "tr onclick location.href"
+    },
+    {
+      "url": "/bbs/view.do?nttId=1003",
+      "location": "p.h1003",
+      "technique": "OFFSCREEN",
+      "note": "a href=# onclick"
+    },
+    {
+      "url": "/bbs/view.do?nttId=1004",
+      "location": "p.h1004",
+      "technique": "TRANSPARENT",
+      "note": "addEventListener(data-ntt)"
+    },
+    {
+      "url": "/bbs/view.do?nttId=1005",
+      "location": "p.h1005",
+      "technique": "OFFSCREEN",
+      "note": "2쪽: javascript:fn_link_page(2) -> GET 폼 전송"
+    },
+    {
+      "url": "/bbs/view.do?nttId=1006",
+      "location": "p.h1006",
+      "technique": "TRANSPARENT",
+      "note": "button onclick"
+    },
+    {
+      "url": "/bbs/view.do?nttId=1007",
+      "location": "p.h1007",
+      "technique": "OFFSCREEN",
+      "note": "window.open 팝업"
+    },
+    {
+      "url": "/bbs/view.do?nttId=1001",
+      "location": "li.c2 > span",
+      "technique": "OFFSCREEN",
+      "note": "비동기(fetch)로 불러온 댓글"
+    }
+  ]
+}

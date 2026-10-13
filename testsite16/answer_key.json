@@ -1,0 +1,41 @@
+{
+  "base": "http://127.0.0.1:8787",
+  "entry_url": "http://127.0.0.1:8787/ocr/list",
+  "note": "그림 속 글자 인식 시험용(Windows 한국어 글자 인식 필요). 주요 4종 정답은 없고 추가 유형 기대값만 둔다. --attachments --ocr-images 로 실행.",
+  "answers": [],
+  "extra_answers": [
+    {
+      "url": "/ocr/view?id=1",
+      "location": "p > img.banner",
+      "extra_finding": "IMAGE_TEXT_AD",
+      "note": "본문 배너 그림 속 광고 (--ocr-images)"
+    },
+    {
+      "url": "/ocr/view?id=1",
+      "location": "ul.files > li:nth-of-type(1) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "첨부 그림(PNG) 포스터"
+    },
+    {
+      "url": "/ocr/view?id=1",
+      "location": "ul.files > li:nth-of-type(3) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "스캔 PDF (JPEG 그림만, 글자층 없음)"
+    },
+    {
+      "url": "/ocr/view?id=1",
+      "location": "ul.files > li:nth-of-type(4) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "스캔 PDF (압축만 푼 RGB 픽셀)"
+    },
+    {
+      "url": "/ocr/view?id=1",
+      "location": "ul.files > li:nth-of-type(5) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "스캔 PDF (팩스식 흑백 압축 CCITT G4, PDFium 으로 그려 읽음)"
+    }
+  ],
+  "clean": [
+    "files/photo.jpg (본문 그림·첨부 모두)"
+  ]
+}

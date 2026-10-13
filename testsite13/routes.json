@@ -1,0 +1,26 @@
+{
+  "/site/main|": "pages/main.html",
+  "/site/view|1": "pages/view_1.html",
+  "/site/view|2": "pages/view_2.html",
+  "/site/view|3": "pages/view_3.html",
+  "/site/view|4": "pages/view_4.html",
+  "/site/widget|": "pages/widget.html",
+  "/site/cmt|3": "pages/cmt_3.html",
+  "/site/cmt|4": "pages/cmt_4.html",
+  "/go/notice|": {
+    "redirect": "/site/view?id=1"
+  },
+  "/site/old|2": {
+    "redirect": "/site/view?id=2"
+  },
+  "/site/view|5": "pages/view_5.html",
+  "/site/selectCmtList.do|5": {
+    "post_page": "pages/cmt_5.html"
+  },
+  "/site/selectCmtList.do|": {
+    "post_page": "pages/cmt_5.html"
+  },
+  "/site/deleteCmt.do|": {
+    "post_page": "pages/cmt_5.html"
+  }
+}

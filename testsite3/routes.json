@@ -1,0 +1,8 @@
+{
+  "/portal/list|": "pages/list.html",
+  "/portal/doc|11": "pages/doc_11.html",
+  "/portal/doc|12": "pages/doc_12.html",
+  "/portal/doc|13": "pages/doc_13.html",
+  "/portal/doc|14": "pages/doc_14.html",
+  "/portal/frame|": "pages/frame.html"
+}

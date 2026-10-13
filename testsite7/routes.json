@@ -1,0 +1,6 @@
+{
+  "/gap/list|": "pages/list.html",
+  "/gap/view|1": "pages/view_1.html",
+  "/gap/view|2": "pages/view_2.html",
+  "/gap/view|3": "pages/view_3.html"
+}

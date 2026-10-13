@@ -1,0 +1,140 @@
+{
+  "base": "http://127.0.0.1:8769",
+  "entry_url": "http://127.0.0.1:8769/bbs/list",
+  "note": "첨부파일 검사 시험용. 주요 4종 정답은 없고, 추가 유형(result_extra.json) 기대값만 둔다. --attachments 로 실행.",
+  "answers": [],
+  "extra_answers": [
+    {
+      "url": "/bbs/view?id=2",
+      "location": "ul.files > li:nth-of-type(1) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "HWP 본문(FileDown.do, 확장자 없는 주소)"
+    },
+    {
+      "url": "/bbs/view?id=2",
+      "location": "ul.files > li:nth-of-type(2) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "PDF 흰 글씨 2px"
+    },
+    {
+      "url": "/bbs/view?id=2",
+      "location": "ul.files > li:nth-of-type(3) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "HWPX 본문"
+    },
+    {
+      "url": "/bbs/view?id=3",
+      "location": "li:nth-of-type(1) > a",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "javascript:fn_egov_downFile (새 창으로 FileDown.do) — HWPX"
+    },
+    {
+      "url": "/bbs/view?id=3",
+      "location": "span.btn-down",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "onclick 으로 location.href 이동 — PDF"
+    },
+    {
+      "url": "/bbs/view?id=3",
+      "location": "a.down",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "숨은 폼 POST 내려받기를 GET 으로 바꿔 받음 — HWP"
+    },
+    {
+      "url": "/bbs/view?id=4",
+      "location": "ul.files > li:nth-of-type(1) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "hidden": [
+        "흰 글씨"
+      ],
+      "note": "HWPX 글자 모양(charPr) 흰색"
+    },
+    {
+      "url": "/bbs/view?id=4",
+      "location": "ul.files > li:nth-of-type(2) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "hidden": [
+        "글자 크기 1.0pt"
+      ],
+      "note": "HWP 문단 중간 1pt 글자(PARA_CHAR_SHAPE)"
+    },
+    {
+      "url": "/bbs/view?id=4",
+      "location": "ul.files > li:nth-of-type(3) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "hidden": [
+        "흰 글씨",
+        "글자 크기 0.7pt"
+      ],
+      "note": "PDF 채움색 흰색 + 1px 글자"
+    },
+    {
+      "url": "/bbs/view?id=5",
+      "location": "ul.files > li:nth-of-type(1) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "hidden": [
+        "숨김 속성(Word 숨긴 텍스트)"
+      ],
+      "note": "DOCX 문단 중간 w:vanish"
+    },
+    {
+      "url": "/bbs/view?id=5",
+      "location": "ul.files > li:nth-of-type(3) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "hidden": [
+        "글자 크기 1.0pt"
+      ],
+      "note": "PPTX a:rPr sz=100"
+    },
+    {
+      "url": "/bbs/view?id=5",
+      "location": "ul.files > li:nth-of-type(4) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "XLSX 공유 문자열에 보이는 광고"
+    },
+    {
+      "url": "/bbs/view?id=5",
+      "location": "ul.files > li:nth-of-type(5) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "ZIP 안 HWPX(광고)·HWP(정상)"
+    },
+    {
+      "url": "/bbs/view?id=6",
+      "location": "ul.files > li:nth-of-type(1) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "Word 97-2003(.doc), MS Word 로 만듦"
+    },
+    {
+      "url": "/bbs/view?id=6",
+      "location": "ul.files > li:nth-of-type(2) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "Excel 97-2003(.xls)"
+    },
+    {
+      "url": "/bbs/view?id=6",
+      "location": "ul.files > li:nth-of-type(3) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "note": "PowerPoint 97-2003(.ppt)"
+    },
+    {
+      "url": "/bbs/view?id=6",
+      "location": "ul.files > li:nth-of-type(4) > a.file",
+      "extra_finding": "ATTACHMENT_AD",
+      "hidden": [
+        "흰 글씨",
+        "숨긴 열",
+        "글자 크기 1.0pt",
+        "값을 안 보이게 하는 서식(;;;)",
+        "숨긴 행",
+        "숨긴 시트"
+      ],
+      "note": "XLSX 숨긴 서식 6가지, MS Excel 로 만듦"
+    }
+  ],
+  "clean": [
+    "files/notice.pdf",
+    "files/form.hwp",
+    "view?id=3 의 F002(개인정보_동의서.hwp, 광고 없음)와 삭제 단추(누르면 안 됨)",
+    "view?id=5 의 clean.docx"
+  ]
+}

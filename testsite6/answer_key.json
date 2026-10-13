@@ -1,0 +1,103 @@
+{
+  "base": "http://127.0.0.1:8770",
+  "entry_url": "http://127.0.0.1:8770/main",
+  "note": "검색결과 반사 취약 점검(SEARCH_REFLECT) 시험용. 주요 4종 정답은 없다. 같은 검색 주소는 처음 발견한 페이지에서 1건만 보고한다(통합검색은 모든 페이지 머리에 있음).",
+  "answers": [],
+  "extra_answers": [
+    {
+      "url": "/main",
+      "location": "form.search-total",
+      "extra_finding": "SEARCH_REFLECT",
+      "grade": "취약",
+      "note": "/search/total.do?kwd= : <title> 에 반사, 색인 차단 없음"
+    },
+    {
+      "url": "/board/list",
+      "location": "form.board-search",
+      "extra_finding": "SEARCH_REFLECT",
+      "grade": "주의",
+      "note": "/board/list?searchWrd= : 본문에만 반사"
+    },
+    {
+      "url": "/guide/faq",
+      "location": "form.faq-search",
+      "extra_finding": "SEARCH_REFLECT",
+      "grade": "주의",
+      "note": "/faq/search?q= : robots.txt 로 수집만 막힘. 조회하지 않고 robots.txt 로 판정해야 한다"
+    },
+    {
+      "url": "/event/list",
+      "location": "form.event-search",
+      "extra_finding": "SEARCH_REFLECT",
+      "grade": "주의",
+      "note": "/event/search?srchText= : <title> 반사, canonical 만 있음"
+    }
+  ],
+  "safe": [
+    {
+      "url": "/news/list",
+      "location": "form.news-search",
+      "note": "meta robots noindex -> 안전(보고하더라도 안전 등급)"
+    },
+    {
+      "url": "/lib/main",
+      "location": "form.lib-search",
+      "note": "X-Robots-Tag: noindex 헤더 -> 안전"
+    }
+  ],
+  "no_finding": [
+    {
+      "url": "/main",
+      "location": "form.site-go",
+      "note": "검색이 아닌 GET 폼(글자 입력칸 없음). 조회하면 안 된다"
+    },
+    {
+      "url": "/mw/main",
+      "location": "form.mw-search",
+      "note": "POST 전용. 전송하면 안 된다"
+    },
+    {
+      "url": "/minwon/list",
+      "location": "form.minwon-search",
+      "note": "입력값을 반사하지 않음"
+    }
+  ],
+  "csv_expect": {
+    "file": "searchconsole_pages.csv",
+    "note": "--index-csv 로 넣었을 때 result_extra.json 에 추가로 나와야 하는 건. 열 이름은 실제 내보내기와 다를 수 있어 가져오기는 주소 열을 값으로 찾는다.",
+    "rows": [
+      {
+        "url": "/search/total.do?kwd=첫충20% 매충10% 가입쿠폰 텔레그램@vip777",
+        "location": "title",
+        "extra_finding": "SEARCH_INDEXED",
+        "grade": "피해 확인"
+      },
+      {
+        "url": "/board/list?searchWrd=토토사이트 추천 먹튀검증 안전놀이터",
+        "location": "body",
+        "extra_finding": "SEARCH_INDEXED",
+        "grade": "피해 확인"
+      },
+      {
+        "url": "/cms/searchResult.do?keyword=바카라 사이트 첫가입 꽁머니 지급",
+        "location": "title",
+        "extra_finding": "SEARCH_INDEXED",
+        "grade": "피해 확인",
+        "note": "누리집 어디에도 링크되지 않은 경로"
+      },
+      {
+        "url": "/old/search.jsp?searchKeyword=청년 창업 지원&pageIndex=1",
+        "location": "html",
+        "extra_finding": "SEARCH_REFLECT",
+        "grade": "취약",
+        "note": "광고는 없지만 색인 목록으로 처음 알게 된 검색 경로. 표식 조회로 반사 확인(A -> B)"
+      }
+    ],
+    "clean": [
+      "/main",
+      "/board/list",
+      "/news/list",
+      "/search/total.do?kwd=정보공개 청구 (통합검색은 B 에서 이미 점검해 다시 조회하지 않음)"
+    ]
+  }
+}

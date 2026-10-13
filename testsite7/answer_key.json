@@ -1,0 +1,132 @@
+{
+  "base": "http://127.0.0.1:8771",
+  "entry_url": "http://127.0.0.1:8771/gap/list",
+  "note": "주요 4종 빈틈 점검용. 1번 글은 기존 판정이 놓칠 수 있는 은닉, 2번 글은 비슷한 속성이지만 실제로 보이는 함정, 3번 글은 정상 공고.",
+  "answers": [
+    {
+      "url": "/gap/view?id=1",
+      "location": "p.cp-circle",
+      "technique": "OFFSCREEN",
+      "note": "clip-path:circle(0)"
+    },
+    {
+      "url": "/gap/view?id=1",
+      "location": "p.cp-poly",
+      "technique": "OFFSCREEN",
+      "note": "clip-path:polygon 넓이 0"
+    },
+    {
+      "url": "/gap/view?id=1",
+      "location": "p.cp-inset",
+      "technique": "OFFSCREEN",
+      "note": "clip-path:inset(50%)"
+    },
+    {
+      "url": "/gap/view?id=1",
+      "location": "p.f-opacity",
+      "technique": "TRANSPARENT",
+      "note": "filter:opacity(0)"
+    },
+    {
+      "url": "/gap/view?id=1",
+      "location": "p.fill-clear",
+      "technique": "TRANSPARENT",
+      "note": "-webkit-text-fill-color:transparent"
+    },
+    {
+      "url": "/gap/view?id=1",
+      "location": "div.zero-box > p",
+      "technique": "OFFSCREEN",
+      "note": "부모 height:0 + overflow:hidden"
+    },
+    {
+      "url": "/gap/view?id=1",
+      "location": "div.max-zero > span",
+      "technique": "OFFSCREEN",
+      "note": "부모 max-height:0 + overflow:hidden"
+    },
+    {
+      "url": "/gap/view?id=1",
+      "location": "p.left-999",
+      "technique": "OFFSCREEN",
+      "note": "left:-999px (-1000 기준 바로 안쪽)"
+    },
+    {
+      "url": "/gap/view?id=1",
+      "location": "p.right-far",
+      "technique": "OFFSCREEN",
+      "note": "left:9999px (오른쪽 밖, 가로 스크롤 막힘)"
+    },
+    {
+      "url": "/gap/view?id=1",
+      "location": "p.tiny-scale",
+      "technique": "OFFSCREEN",
+      "note": "transform:scale(0.05) -> 글자 약 0.8px"
+    },
+    {
+      "url": "/gap/view?id=1",
+      "location": "p.clip-1px",
+      "technique": "OFFSCREEN",
+      "note": "clip:rect(1px,1px,1px,1px)"
+    },
+    {
+      "url": "/gap/view?id=1",
+      "location": "div.indent-box > p",
+      "technique": "OFFSCREEN",
+      "note": "text-indent:-400px 가 부모 overflow:hidden 밖으로"
+    },
+    {
+      "url": "/gap/view?id=1",
+      "location": "p.shift-out",
+      "technique": "OFFSCREEN",
+      "note": "부모 overflow:hidden 밖으로 top:-300px"
+    }
+  ],
+  "traps": [
+    {
+      "url": "/gap/view?id=2",
+      "location": "p.vis-child",
+      "why": "부모 visibility:hidden 이지만 자식 visibility:visible 로 보임"
+    },
+    {
+      "url": "/gap/view?id=2",
+      "location": "p.cp-half",
+      "why": "clip-path:inset(0) 은 잘라내지 않음"
+    },
+    {
+      "url": "/gap/view?id=2",
+      "location": "p.scale-one",
+      "why": "scale(1)"
+    },
+    {
+      "url": "/gap/view?id=2",
+      "location": "div.clip-parent > p",
+      "why": "overflow:hidden 부모 안에 온전히 보임"
+    },
+    {
+      "url": "/gap/view?id=2",
+      "location": "p.indent-small",
+      "why": "작은 음수 들여쓰기"
+    },
+    {
+      "url": "/gap/view?id=2",
+      "location": "p.dim",
+      "why": "회색 글씨(대비 충분)"
+    },
+    {
+      "url": "/gap/view?id=3",
+      "location": "div.cont > p:nth-of-type(1)",
+      "why": "도박 예방 정상 공고"
+    },
+    {
+      "url": "/gap/view?id=3",
+      "location": "p.sr-only",
+      "why": "스크린리더용 정상 문구"
+    },
+    {
+      "url": "/gap/view?id=3",
+      "location": "details.faq > p",
+      "why": "닫힌 FAQ 펼침 영역(정상 UI)"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "/main|": "pages/main.html",
+  "/about|": "pages/about.html",
+  ":8779/festival/|": "pages/ext_festival_gamble.html",
+  ":8780/|": "pages/ext_parked.html",
+  ":8781/|": "pages/ext_prevention.html",
+  ":8782/kids|": "pages/ext_jump.html",
+  ":8783/land|": "pages/ext_adult.html",
+  ":8784/tour|": "pages/ext_tour.html",
+  ":8785/|": "pages/ext_gamble_root.html"
+}

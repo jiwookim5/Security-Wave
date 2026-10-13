@@ -1,0 +1,8 @@
+{
+  "/notice/index|": "pages/index.html",
+  "/notice/read|77": "pages/read_77.html",
+  "/notice/read|88": "pages/read_88.html",
+  "/notice/read|90": "pages/read_90.html",
+  "/widget/outer|": "pages/widget_outer.html",
+  "/widget/inner|": "pages/widget_inner.html"
+}

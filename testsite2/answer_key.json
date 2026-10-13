@@ -1,0 +1,24 @@
+{
+  "base": "http://127.0.0.1:8766",
+  "entry_url": "http://127.0.0.1:8766/notice/index",
+  "answers": [
+    {"url": "/notice/index", "location": "table > tbody > tr:nth-of-type(2) > td:nth-of-type(2) > a", "technique": "HOMOGLYPH", "note": "그리스 Ρ + 전각 ＣＡＳＩＮＯ"},
+    {"url": "/notice/index", "location": "div#c > span", "technique": "JAMO", "note": "ㅌㅗㅌㅗ"},
+    {"url": "/notice/index", "location": "div#c > span", "technique": "OFFSCREEN", "note": "text-indent:-9999px"},
+
+    {"url": "/notice/read?no=77", "location": "div#c > p:nth-of-type(2)", "technique": "TRANSPARENT", "note": "color:rgba(0,0,0,0)"},
+    {"url": "/notice/read?no=77", "location": "div#c > div:nth-of-type(1)", "technique": "OFFSCREEN", "note": "clip:rect(0 0 0 0)"},
+    {"url": "/notice/read?no=77", "location": "div#c > span:nth-of-type(1)", "technique": "TRANSPARENT", "note": "opacity:0"},
+    {"url": "/notice/read?no=77", "location": "div#c > span:nth-of-type(1)", "technique": "JAMO", "note": "제로폭 끼운 자모"},
+
+    {"url": "/notice/read?no=88", "location": "table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)", "technique": "HOMOGLYPH", "note": "키릴 Ьассаrаt"},
+    {"url": "/notice/read?no=88", "location": "iframe[src=\"http://127.0.0.1:8766/widget/outer\"] >>> iframe[src=\"http://127.0.0.1:8766/widget/inner\"] >>> div.inner-wrap > span", "technique": "OFFSCREEN", "note": "2중 iframe 내부 display:none"}
+  ],
+  "traps": [
+    {"url": "/notice/index", "location": "a.sr", "why": "스킵내비게이션"},
+    {"url": "/notice/index", "location": "p > span.sr", "why": "약한 키워드 3개(추천/순위표/바로가기) 정상 문구"},
+    {"url": "/notice/read?no=77", "location": "div#c > div:nth-of-type(2)", "why": "정상 인쇄 안내 display:none"},
+    {"url": "/notice/read?no=77", "location": "div#c > span:nth-of-type(2)", "why": "약한 키워드 2개(검증/주소) 정상 문구"},
+    {"url": "/notice/read?no=90", "location": "div#c > h2", "why": "카지노 언급하나 가시 상태 정상 공고"}
+  ]
+}

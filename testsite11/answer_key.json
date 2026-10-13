@@ -1,0 +1,9 @@
+{
+  "base": "http://www.demo.localhost:8775",
+  "entry_url": "http://www.demo.localhost:8775/main",
+  "note": "점검 범위 시험. *.localhost 는 Edge 가 이 PC(127.0.0.1)로 연결한다. 기본 설정에서는 같은 주소(1번)와 www 없는 주소(2번)만 점검 대상이다. 서브도메인 옵션(--subdomains)을 켜면 bbs.demo.localhost 의 3번도 검출해야 하고, 다른 누리집(other.localhost) 4번은 어느 쪽이든 검출하면 안 된다.",
+  "answers": [
+    {"url": "/board/view?id=1", "location": "div.cont > span.blind", "technique": "OFFSCREEN"},
+    {"url": "http://demo.localhost:8775/board/view?id=2", "location": "div.cont > span.blind", "technique": "OFFSCREEN"}
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "base": "http://127.0.0.1:8776",
+  "entry_url": "http://127.0.0.1:8776/egov/list.do",
+  "note": "크롤링 구멍 시험 (전자정부 게시판 형태). 11번 글로 가는 주소 4가지(파라미터 순서·;jsessionid·utm_ 만 다름)는 한 번만 방문해야 하고(방문 페이지 수로 확인), 21번 글은 iframe 메뉴 안에만 링크가 있으며, 31번 글은 fn_link_page(2) 가 POST 로 여는 2쪽 목록에만 있다. 11번 글의 광고는 숨긴 상자 안에서 '안전'·'놀이터'로 쪼개져 있고, 같은 글의 스크린리더용 숨김 메뉴('본문 바로가기' 등)는 합쳐도 광고가 아니다. 시험 서버는 POST 를 받으면 _posted.log 를 남기므로 시험 뒤 이 파일이 없어야 한다.",
+  "answers": [
+    {"url": "/egov/view.do?bbsId=B1&nttId=11", "location": "div.cont > div.ad-box", "technique": "OFFSCREEN"},
+    {"url": "/egov/view.do?bbsId=B1&nttId=21", "location": "div.cont > span.hide", "technique": "OFFSCREEN"},
+    {"url": "/egov/view.do?bbsId=B1&nttId=31", "location": "div.cont > span.clear", "technique": "TRANSPARENT"}
+  ]
+}

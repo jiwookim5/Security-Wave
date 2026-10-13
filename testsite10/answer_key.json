@@ -1,0 +1,117 @@
+{
+  "base": "http://127.0.0.1:8774",
+  "entry_url": "http://127.0.0.1:8774/visit/list",
+  "note": "게시판 노출 광고(VISIBLE_AD) 시험. 2026-09-28 검색엔진 결과에서 확인한 실제 공공 누리집 방명록·게시판 광고 문구를 옮겼다. 숨기지 않은 광고는 추가 유형으로, 닮은꼴 글자를 쓴 광고는 주요 4종(HOMOGLYPH)으로 본다. 7~15번 글은 도서 소개·단속 보도·예방 공지·삼베 체험·체육대회 중계처럼 같은 단어가 섞인 정상 글이다.",
+  "answers": [
+    {
+      "url": "/visit/list",
+      "location": "li.item-6 > a",
+      "technique": "HOMOGLYPH"
+    },
+    {
+      "url": "/visit/view?no=2",
+      "location": "li.c1",
+      "technique": "HOMOGLYPH"
+    },
+    {
+      "url": "/visit/view?no=6",
+      "location": "h3",
+      "technique": "HOMOGLYPH"
+    },
+    {
+      "url": "/visit/view?no=6",
+      "location": "div.cont > p",
+      "technique": "HOMOGLYPH"
+    }
+  ],
+  "extra_answers": [
+    {
+      "url": "/visit/list",
+      "location": "li.item-1:nth-of-type(1)",
+      "extra_finding": "VISIBLE_AD"
+    },
+    {
+      "url": "/visit/list",
+      "location": "li.item-3:nth-of-type(3)",
+      "extra_finding": "VISIBLE_AD"
+    },
+    {
+      "url": "/visit/list",
+      "location": "li.item-4:nth-of-type(4)",
+      "extra_finding": "VISIBLE_AD"
+    },
+    {
+      "url": "/visit/list",
+      "location": "li.item-5:nth-of-type(5)",
+      "extra_finding": "VISIBLE_AD"
+    },
+    {
+      "url": "/visit/view?no=1",
+      "location": "h3",
+      "extra_finding": "VISIBLE_AD"
+    },
+    {
+      "url": "/visit/view?no=1",
+      "location": "div.cont > p",
+      "extra_finding": "VISIBLE_AD"
+    },
+    {
+      "url": "/visit/view?no=3",
+      "location": "h3",
+      "extra_finding": "VISIBLE_AD"
+    },
+    {
+      "url": "/visit/view?no=4",
+      "location": "h3",
+      "extra_finding": "VISIBLE_AD"
+    },
+    {
+      "url": "/visit/view?no=5",
+      "location": "h3",
+      "extra_finding": "VISIBLE_AD"
+    },
+    {
+      "url": "/visit/view?no=5",
+      "location": "div.cont > p",
+      "extra_finding": "VISIBLE_AD"
+    }
+  ],
+  "safe": [
+    {
+      "url": "/visit/view?no=7",
+      "title": "텔레그램 계정 및 지인사칭 해킹 주의 안내"
+    },
+    {
+      "url": "/visit/view?no=8",
+      "title": "[보도자료] 청소년 출입금지업소 '홀덤펍' 합동단속 17개소 적발"
+    },
+    {
+      "url": "/visit/view?no=9",
+      "title": "[추천도서] 창가의 토토 - 어린이 자료실"
+    },
+    {
+      "url": "/visit/view?no=10",
+      "title": "카지노업 영업 준칙 일부개정 행정예고"
+    },
+    {
+      "url": "/visit/view?no=11",
+      "title": "안동포 전통 삼베 짜기 체험 안내"
+    },
+    {
+      "url": "/visit/view?no=12",
+      "title": "가정의 달 설문 이벤트 - 참여하면 모바일 쿠폰 지급"
+    },
+    {
+      "url": "/visit/view?no=13",
+      "title": "[예방] 대포통장 매입 제의는 112 신고"
+    },
+    {
+      "url": "/visit/view?no=14",
+      "title": "불법 토토·카지노 사이트 이용은 처벌 대상입니다"
+    },
+    {
+      "url": "/visit/view?no=15",
+      "title": "시민체육대회 스포츠 중계 안내"
+    }
+  ]
+}
